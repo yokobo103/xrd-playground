@@ -8,11 +8,11 @@ function draw(){
  cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
  // all-over faint grain
  for(let i=0;i<1100;i++){const a=.012+Math.random()*.03;ctx.fillStyle=`rgba(190,225,255,${a})`;ctx.fillRect(Math.random()*W,Math.random()*H,1,1);}
- // ring cluster, partly offscreen at top-right
- const cx=W-70,cy=30,scale=Math.min(1.15,Math.max(.7,W/1100));
- const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,360*scale);
+ // ring cluster: fully inside the viewport, sized to the smaller screen dimension
+ const Rout=Math.min(250,W*.34,H*.32),cx=W-Rout-16,cy=Rout+16,scale=Rout/246;
+ const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,Rout*1.45);
  glow.addColorStop(0,'rgba(98,230,224,.10)');glow.addColorStop(.6,'rgba(98,230,224,.04)');glow.addColorStop(1,'rgba(98,230,224,0)');
- ctx.fillStyle=glow;ctx.fillRect(cx-380*scale,cy-380*scale,760*scale,760*scale);
+ ctx.fillStyle=glow;ctx.fillRect(cx-Rout*1.5,cy-Rout*1.5,Rout*3,Rout*3);
  const rings=[{r:64,a:.85},{r:118,a:.6},{r:178,a:.42},{r:246,a:.28}];
  for(const ring of rings){const R=ring.r*scale,phase=Math.random()*6.28,phase2=Math.random()*6.28;
   const n=Math.floor(R*16);
