@@ -1,0 +1,12 @@
+[hidden]{display:none!important}nav{grid-template-columns:repeat(4,1fr)}#origin{border-top:1px solid var(--line)}
+#origin-lattice{height:290px}#origin-plot{height:310px;cursor:crosshair}#indices-cube{height:300px}
+.origin-hint{font-size:13px;color:var(--muted);margin:10px 0;line-height:1.7}
+.plane-presets{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.plane-presets button{padding:8px 12px;font-size:14px}
+.origin-workspace label{font-size:14px;display:block;margin-top:12px}
+#reflection-select{display:block;width:100%;font:inherit;font-size:14px;background:var(--bg);color:var(--text);padding:10px;border:1px solid var(--line);border-radius:6px;margin:9px 0}
+.origin-chain{display:flex;flex-wrap:wrap;gap:14px 30px;padding:20px 0;border-bottom:1px solid var(--line);font-size:14px}
+.origin-chain span{display:flex;flex-direction:column;gap:6px;color:var(--muted)}.origin-chain b{color:var(--text);font-size:19px;font-weight:500}
+.combined-controls{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;padding:18px 0}.combined-controls label{font-size:14px}.combined-controls output{float:right;color:var(--cyan);font-variant-numeric:tabular-nums}.combined-controls p,.powder-note p{font-size:14px;color:var(--muted);margin:4px 0}
+.indices-layout{display:grid;grid-template-columns:1fr 1.2fr;gap:26px}.indices-layout>div{min-width:0}.indices-layout p{font-size:14px}.indices-table{width:100%;border-collapse:collapse;font-size:13px;color:var(--text)}.indices-table th,.indices-table td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line)}#indices-bonus{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 0;margin:16px 0}#indices-bonus summary{font-size:16px;color:var(--text)}.powder-note h3{font-size:16px}.powder-note{padding:12px 0}
+@media(max-width:800px){nav{grid-template-columns:repeat(2,1fr)}.indices-layout{grid-template-columns:1fr}}
+@media(max-width:620px){#origin-lattice{height:255px}#origin-plot{height:240px}#indices-cube{height:260px}.origin-chain{gap:14px}.origin-chain b{font-size:16px}.combined-controls{grid-template-columns:1fr;gap:8px}.plane-presets button{padding:7px 10px}.indices-table{font-size:12px}}
