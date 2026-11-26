@@ -48,7 +48,7 @@
  }
  function render(){
   if($('waves-intro').hidden)return;const data=XRD.scatterArray(angle,count);
-  $('wave-angle').value=angle;$('wave-angle-value').textContent=angle.toFixed(2)+'°';$('wave-strength').textContent=Math.round(data.relative*100)+'%';$('wave-fill').style.width=data.relative*100+'%';
+  $('wave-angle').value=angle;$('wave-angle-value').textContent=angle.toFixed(2)+'°';$('wave-strength').textContent=Math.round(data.relative*100)+'%';$('wave-fill').style.width=data.relative*100+'%';document.querySelector('.wave-receiver').classList.toggle('aligned',data.relative>.97);
   document.querySelectorAll('[data-atoms]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.atoms===count));$('wave-chart-note').textContent=count===16?'実線：16個 / 点線：2個（最大を100%にそろえて比較）':`${count}個の原子の波を足した結果`;
   scene(data);arrivals(data);pattern();observe(data);
  }

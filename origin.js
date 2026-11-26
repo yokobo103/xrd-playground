@@ -31,12 +31,12 @@
  function select(name){model.name=name;render();}
  function chart(peaks){
   const {el,w,h}=frame('origin-plot'),left=46,right=w-14,top=32,bottom=h-42,xx=x=>left+(x-15)/75*(right-left),yy=y=>bottom-y/1.3*(bottom-top),selected=peaks.find(p=>p.q===qOf(model.name));
-  plotMap={left,right,peaks};let svg=`<defs><clipPath id="origin-clip"><rect x="${left}" y="${top}" width="${right-left}" height="${bottom-top}"/></clipPath></defs>`;
+  plotMap={left,right,peaks};let svg=`<defs><clipPath id="origin-clip"><rect x="${left}" y="${top}" width="${right-left}" height="${bottom-top}"/></clipPath><filter id="peak-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
   svg+=text(left,16,'相対強度（尺度は固定）','style="font-size:12px;fill:#a8bbce"');
   for(const v of [0,.5,1]){svg+=line([left,yy(v)],[right,yy(v)],'#2c3e52');svg+=text(left-8,yy(v)+4,v.toFixed(1),'text-anchor="end" style="font-size:12px"');}
   for(const x of [20,40,60,80])svg+=text(xx(x),bottom+20,String(x),'text-anchor="middle" style="font-size:12px"');svg+=text((left+right)/2,h-5,'散乱角 2θ（°）','text-anchor="middle"');
   function curve(list,color,width){let d='';for(let i=0;i<=2100;i++){const x=15+75*i/2100;d+=(i?'L':'M')+xx(x).toFixed(2)+' '+yy(XRD.intensity(x,list)).toFixed(2);}return `<path d="${d}" fill="none" stroke="${color}" stroke-width="${width}"/>`;}
-  svg+='<g clip-path="url(#origin-clip)">'+curve(peaks,cyan,1.8)+(selected?curve([selected],gold,3):'');
+  svg+='<g clip-path="url(#origin-clip)">'+curve(peaks,cyan,1.8)+(selected?curve([selected],gold,3).replace('/>',' filter="url(#peak-glow)"/>'):'');
   for(const p of peaks){const active=p===selected;svg+=`<circle cx="${xx(p.x)}" cy="${yy(XRD.intensity(p.x,[p]))}" r="${active?5:3}" fill="${active?gold:cyan}" opacity="${p.area<1e-10?.4:1}"/>`;}
   if(selected)svg+=line([xx(selected.x),top+17],[xx(selected.x),bottom],gold,'stroke-dasharray="4 5" opacity=".7"');svg+='</g>';
   if(selected)svg+=text(Math.max(left+22,Math.min(right-24,xx(selected.x))),top+12,`(${model.name})`,'text-anchor="middle"');el.innerHTML=svg;
