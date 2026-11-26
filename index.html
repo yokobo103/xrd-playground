@@ -1,9 +1,8 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>結晶をさわる、ピークが変わる｜XRD Playground</title><meta name="description" content="検出器を動かし、各原子から届く波のずれと合計の強さを見て、XRDピークが生まれる理由を体験する。"><link rel="stylesheet" href="style.css"><script defer src="physics.js"></script><script defer src="app.js"></script><script defer src="origin.js"></script><link rel="stylesheet" href="origin.css"><link rel="stylesheet" href="waves.css"><link rel="stylesheet" href="glow.css"><script defer src="waves.js"></script><script defer src="title.js"></script></head>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>結晶をさわる、ピークが変わる｜XRD Playground</title><meta name="description" content="検出器を動かし、各原子から届く波のずれと合計の強さを見て、XRDピークが生まれる理由を体験する。"><link rel="stylesheet" href="style.css"><script defer src="physics.js"></script><script defer src="app.js"></script><script defer src="origin.js"></script><link rel="stylesheet" href="origin.css"><link rel="stylesheet" href="waves.css"><link rel="stylesheet" href="glow.css"><script defer src="waves.js"></script></head>
 <body><main>
 <header><div class="brand">よこぼのAIラボ <span>/ XRD PLAYGROUND</span></div><span class="duration">1組の面 → 同じ結晶の全ピーク</span></header>
 <div class="intro"><h1>結晶をさわる、<br class="mobile">ピークが変わる。</h1><p>XRDは、X線が強く届く角度を測る方法。<br>原子の並びを変えて、その理由を見つけよう。</p></div>
-<canvas id="title-peaks" aria-hidden="true"></canvas><p class="title-hint">この帯も小さな実験。指やマウスでなぞると、検出器がピークに重なったところが光る。</p>
 <nav aria-label="実験を選ぶ"><button class="step" id="waves-tab" aria-pressed="false"><b>はじめに</b> 波を足す</button><button class="step active" data-stage="0" aria-pressed="true"><b>01</b> 間隔 → 角度</button><button class="step" id="origin-tab" aria-pressed="false"><b>02 / 総合図</b> 面 ↔ 全ピーク</button><button class="step" data-stage="1" aria-pressed="false"><b>03</b> 並び → 消える</button><button class="step" data-stage="2" aria-pressed="false"><b>04</b> サイズ → 幅</button></nav>
 
 <section id="waves-intro" aria-labelledby="waves-title">
