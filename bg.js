@@ -23,9 +23,6 @@ function draw(){
    const x=cx+Math.cos(ang)*rr,y=cy+Math.sin(ang)*rr,s=.6+Math.random()*1.4;
    ctx.fillStyle=Math.random()<.22?`rgba(98,230,224,${al})`:`rgba(200,242,255,${al})`;
    ctx.beginPath();ctx.arc(x,y,s,0,6.29);ctx.fill();}}
- // beam stop shadow at ring center
- ctx.fillStyle='rgba(3,7,12,.55)';ctx.beginPath();ctx.arc(cx,cy,17*scale,0,6.29);ctx.fill();
- ctx.strokeStyle='rgba(160,210,240,.14)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,17*scale,0,6.29);ctx.stroke();
 }
 draw();addEventListener('resize',()=>{clearTimeout(timer);timer=setTimeout(draw,220);});
 })();
