@@ -1,7 +1,7 @@
 (() => {
  'use strict';
  const $=id=>document.getElementById(id),gold='#ffc66b',cyan='#62e6e0',presets=['100','101','110','111','200','210'];
- let model={a:4,center:0,size:60,name:'100',orbit:32},plotMap=null;
+ let model={a:4,center:0,size:60,name:'100',orbit:32},plotMap=null,ghostA=4,committedA=4;
  const hkl=()=>model.name.split('').map(Number),qOf=name=>name.split('').reduce((s,n)=>s+n*n,0);
  function planeHasAtoms(n,level,extent,center){
   for(let x=0;x<=extent;x++)for(let y=0;y<=extent;y++)for(let z=0;z<=extent;z++)if(n[0]*x+n[1]*y+n[2]*z===level)return true;
@@ -20,10 +20,10 @@
   for(let axis=0;axis<3;axis++)for(const b of [0,extent])for(const c of [0,extent]){const other=[0,1,2].filter(i=>i!==axis),p=[0,0,0],r=[0,0,0];p[other[0]]=r[other[0]]=b;p[other[1]]=r[other[1]]=c;r[axis]=extent;const a=project(p),d=project(r);items.push({depth:(a[2]+d[2])/2,svg:line(a,d,'#657b92','stroke-width="1.3"')});}
   const m=n.reduce((s,v)=>s+v,0);
   let emptyDrawn=false;
-  for(const level of bonus?[1]:[m,m+1]){const points=XRD.planePolygon(n,level,extent).map(project);if(points.length){const empty=!planeHasAtoms(n,level,extent,model.center);if(empty)emptyDrawn=true;items.push({depth:points.reduce((s,p)=>s+p[2],0)/points.length,svg:`<polygon points="${points.map(p=>p.slice(0,2).join(',')).join(' ')}" fill="${empty?'#8fb4d9':gold}" fill-opacity="${empty?.07:(bonus?.26:.17)}" stroke="${empty?'#8fb4d9':gold}" stroke-width="1.6"${empty?' stroke-dasharray="5 4"':''}/>`});}}
+  for(const level of bonus?[1]:[m,m+1]){const points=XRD.planePolygon(n,level,extent).map(project);if(points.length){const empty=!planeHasAtoms(n,level,extent,model.center);if(empty)emptyDrawn=true;items.push({depth:points.reduce((s,p)=>s+p[2],0)/points.length,svg:`<polygon points="${points.map(p=>p.slice(0,2).join(',')).join(' ')}" fill="${empty?'#8fb4d9':gold}" fill-opacity="${empty?.07:(bonus?.26:.17)}" stroke="${empty?'#8fb4d9':gold}" stroke-width="1.6"${empty?' stroke-dasharray="5 4"':' filter="url(#origin-plane-glow)"'}/>`});}}
   for(let x=0;x<=extent;x++)for(let y=0;y<=extent;y++)for(let z=0;z<=extent;z++){const p=project([x,y,z]);items.push({depth:p[2]+.01,svg:`<circle cx="${p[0]}" cy="${p[1]}" r="${bonus?5:3.6}" fill="${cyan}" stroke="#111f30" stroke-width="1"/>`});}
   if(!bonus&&model.center>0)for(let x=.5;x<extent;x++)for(let y=.5;y<extent;y++)for(let z=.5;z<extent;z++){const p=project([x,y,z]);items.push({depth:p[2]+.01,svg:`<circle cx="${p[0]}" cy="${p[1]}" r="4.3" fill="${gold}" opacity="${model.center}"/>`});}
-  let svg=items.sort((a,b)=>a.depth-b.depth).map(v=>v.svg).join('');
+  let svg=(bonus?'':'<defs><filter id="origin-plane-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>')+items.sort((a,b)=>a.depth-b.depth).map(v=>v.svg).join('');
   if(!bonus){const a=project([1,1,1]),b=project(n.map(v=>1+v/q));svg+=line(a,b,gold,'stroke-width="4"');for(const p of [a,b])svg+=`<circle cx="${p[0]}" cy="${p[1]}" r="3.6" fill="${gold}"/>`;svg+=text(w/2,20,`(${model.name}) の平行な2枚`,'text-anchor="middle"');if(emptyDrawn)svg+=text(w/2,38,'破線は原子の載らない面（間隔を示す補助面）','text-anchor="middle" style="font-size:11px;fill:#a8bbce"');svg+=text(w/2,h-6,`面間隔 d = ${XRD.spacing(model.a,...n).toFixed(2)} Å`,'text-anchor="middle"');}
   for(let axis=0;axis<3;axis++){const end=[0,0,0];end[axis]=extent*1.2;const a=project([0,0,0]),b=project(end),color=[cyan,'#b5a1ff',gold][axis];svg+=line(a,b,color,'stroke-width="2"');svg+=text(b[0],b[1]-8,['x','y','z'][axis],'text-anchor="middle"');if(bonus&&n[axis]){end[axis]=1/n[axis];const p=project(end);svg+=`<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="${color}" stroke="#111f30" stroke-width="1.5"/>`;}}
   el.innerHTML=svg;
@@ -36,7 +36,8 @@
   for(const v of [0,.5,1]){svg+=line([left,yy(v)],[right,yy(v)],'#2c3e52');svg+=text(left-8,yy(v)+4,v.toFixed(1),'text-anchor="end" style="font-size:12px"');}
   for(const x of [20,40,60,80])svg+=text(xx(x),bottom+20,String(x),'text-anchor="middle" style="font-size:12px"');svg+=text((left+right)/2,h-5,'散乱角 2θ（°）','text-anchor="middle"');
   function curve(list,color,width){let d='';for(let i=0;i<=2100;i++){const x=15+75*i/2100;d+=(i?'L':'M')+xx(x).toFixed(2)+' '+yy(XRD.intensity(x,list)).toFixed(2);}return `<path d="${d}" fill="none" stroke="${color}" stroke-width="${width}"/>`;}
-  svg+='<g clip-path="url(#origin-clip)">'+curve(peaks,cyan,1.8)+(selected?curve([selected],gold,3).replace('/>',' filter="url(#peak-glow)"/>'):'');
+  const ghostPeaks=ghostA!==model.a?XRD.reflections(ghostA,model.center,model.size).filter(p=>p.x<=90):null;
+  svg+='<g clip-path="url(#origin-clip)">'+(ghostPeaks?curve(ghostPeaks,'#8fa3b8',1.3).replace('/>',' stroke-dasharray="5 4"/>'):'')+curve(peaks,cyan,1.8)+(selected?curve([selected],gold,3).replace('/>',' filter="url(#peak-glow)"/>'):'');
   for(const p of peaks){const active=p===selected;svg+=`<circle cx="${xx(p.x)}" cy="${yy(XRD.intensity(p.x,[p]))}" r="${active?5:3}" fill="${active?gold:cyan}" opacity="${p.area<1e-10?.4:1}"/>`;}
   if(selected)svg+=line([xx(selected.x),top+17],[xx(selected.x),bottom],gold,'stroke-dasharray="4 5" opacity=".7"');svg+='</g>';
   if(selected)svg+=text(Math.max(left+22,Math.min(right-24,xx(selected.x))),top+12,`(${model.name})`,'text-anchor="middle"');el.innerHTML=svg;
@@ -47,6 +48,8 @@
  }
  function render(){
   if($('origin').hidden)return;
+  if($('origin-diff')){const now=XRD.angle(model.a,1),before=XRD.angle(ghostA,1),dd=now-before;
+   $('origin-diff').textContent=Math.abs(ghostA-model.a)<1e-9?`a = ${model.a.toFixed(2)} Å が基準。a を変えて離すと、前のパターンが灰色で残る。`:`a ${ghostA.toFixed(2)} → ${model.a.toFixed(2)} Å：全部のピークが${dd>0?'高角度':'低角度'}側へ（最初のピーク ${before.toFixed(2)}° → ${now.toFixed(2)}°）。面間隔が狭い → そろう角度は大きい。`;}
   const n=hkl(),q=qOf(model.name),angle=XRD.angle(model.a,q),peaks=XRD.reflections(model.a,model.center,model.size).filter(p=>p.x<=90),f=XRD.factor(...n,model.center);
   const names=[...new Set([...presets,...peaks.flatMap(p=>p.labels)])].filter(name=>XRD.angle(model.a,qOf(name))<=90).sort((a,b)=>qOf(a)-qOf(b)||a.localeCompare(b));
   if(!names.includes(model.name))names.push(model.name);
@@ -64,8 +67,10 @@
  $('origin-plot').onclick=e=>{if(!plotMap)return;const bounds=e.currentTarget.getBoundingClientRect(),x=e.clientX-bounds.left;if(x<plotMap.left||x>plotMap.right)return;const angle=15+75*(x-plotMap.left)/(plotMap.right-plotMap.left),p=plotMap.peaks.reduce((a,b)=>Math.abs(b.x-angle)<Math.abs(a.x-angle)?b:a);select(p.q===qOf(model.name)?model.name:p.q===2?'101':p.labels[0]);};
  for(const [id,key] of [['combined-a','a'],['combined-center','center'],['combined-size','size'],['orbit','orbit']])$(id).oninput=e=>{model[key]=+e.target.value;render();};
  $('indices-bonus').ontoggle=bonus;
- window.hideOrigin=()=>{$('origin').hidden=true;$('origin-tab').classList.remove('active');$('origin-tab').setAttribute('aria-pressed','false');};
- window.showOrigin=(options={})=>{if(window.hideWaves)window.hideWaves();cancelAnimationFrame(animation);if(Number.isFinite(options.a))model={...model,a:options.a,center:0,size:60,name:'100'};document.querySelector('.experiment').hidden=true;$('challenge').hidden=true;$('origin').hidden=false;document.querySelectorAll('[data-stage]').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false');});$('origin-tab').classList.add('active');$('origin-tab').setAttribute('aria-pressed','true');render();};
- $('origin-tab').onclick=()=>window.showOrigin();$('origin-reset').onclick=()=>{model={a:4,center:0,size:60,name:'100',orbit:32};render();};$('origin-continue').onclick=()=>enter(1);
- new ResizeObserver(render).observe($('origin'));window.hideOrigin();
+ window.hideOrigin=()=>{};
+ window.showOrigin=(options={})=>{if(Number.isFinite(options.a))model={...model,a:options.a,center:0,size:60,name:'100'};render();$('origin').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});};
+ if($('origin-tab'))$('origin-tab').onclick=()=>window.showOrigin();
+ $('origin-reset').onclick=()=>{model={a:4,center:0,size:60,name:'100',orbit:32};ghostA=4;committedA=4;render();};
+ if($('combined-a'))$('combined-a').addEventListener('change',()=>{ghostA=model.a;committedA=model.a;render();});
+ new ResizeObserver(render).observe($('origin'));render();
 })();
