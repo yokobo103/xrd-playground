@@ -181,48 +181,20 @@ function init(renderer) {
     return { ls, corners, centres };
   }
 
-  /* Wavefronts for Q1: parallel planes sweeping along a direction.
-     The wave is a front that meets the whole plane stack at once —
-     never a ray at a single atom.
-     How many fronts: the user's call — the dense comb (one front per
-     wavelength across the whole path) was too much; 3 quiet fronts
-     spread over the path are the default. The comb is NOT deleted:
-     set WAVE_MODE to 'comb' and the original dense train returns. */
-  const WAVE_MODE = 'few';   // 'few' (default) | 'comb' (preserved)
-  const WAVE_FRONTS = 3;     // fronts drawn in 'few' mode
+  /* Q1 wave representation: NO drawn wavefronts. A geometric wave
+     surface reads as a board skewering the lattice, so the wave is
+     expressed ONLY as light: the phase front sweeps the stack as a
+     travelling pulse of atom brightness (below), one thin beam line
+     marks the incident direction, and the detector plate built in
+     rebuild() lights with the measured intensity. */
   let q1fx = null;
-  function waveComb(dir, mat, zFrom, zTo, lamW) {
-    const g = new THREE.Group();
-    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
-    g.quaternion.copy(q);
-    const comb = WAVE_MODE === 'comb';
-    const w = comb ? 5.6 : 4.8, h = comb ? 3.2 : 2.6;
-    function addFront(z) {
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
-      m.position.z = z;
-      m.userData.ownMat = true;
-      g.add(m);
-    }
-    let gap = lamW;
-    if (comb) {
-      for (let z = zFrom; z <= zTo; z += lamW) addFront(z);
-    } else {
-      gap = WAVE_FRONTS > 1 ? (zTo - zFrom) / (WAVE_FRONTS - 1) : 0;
-      for (let i = 0; i < WAVE_FRONTS; i++) addFront(zFrom + gap * i);
-    }
-    g.userData.gap = gap;
-    waveGroup.add(g);
-    return g;
-  }
   function updateQ1Fx(t) {
     if (!q1fx) return;
-    const off = (t * 0.55) % (q1fx.gap || q1fx.lamW);
-    q1fx.inComb.position.copy(q1fx.P).addScaledVector(q1fx.dirIn, off);
-    q1fx.outComb.position.copy(q1fx.P).addScaledVector(q1fx.dirOut, off);
     /* Every atom's colour follows the total (incident - scattered) phase
-       at its own height: at the aligning angle the layer-to-layer step
-       is exactly 2pi and the whole stack pulses as one; off it, the
-       layers shimmer out of phase and cancel. */
+       at its own height: the bright front travels down the stack, and
+       at the aligning angle the layer-to-layer step is exactly 2pi, so
+       the whole stack pulses as one; off it, the layers shimmer out of
+       phase and cancel. Same phase law as the flow's wave beat. */
     const s = Math.sin(q1fx.twoTheta * Math.PI / 360);
     for (let i = 0; i < q1fx.ys.length; i++) {
       const phi = -(2 * Math.PI / XRD.wavelength) * 2 * s * (q1fx.ys[i] / q1fx.k) - t * 2.4;
@@ -230,6 +202,11 @@ function init(renderer) {
       atoms.setColorAt(i, tmpColor.copy(COL.atom).multiplyScalar(m));
     }
     if (atoms.instanceColor) atoms.instanceColor.needsUpdate = true;
+    /* The detector answers in the same rhythm: it pulses in step with
+       the y = 0 layer, at a strength set by the very intensity the 2D
+       detector panel prints — full on the aligning angle, dark off it.
+       That synchrony is the scattered front arriving in unison. */
+    if (q1fx.detMat) q1fx.detMat.emissiveIntensity = 2.4 * q1fx.glow * (0.6 + 0.4 * Math.cos(t * 2.4));
   }
 
   /* ---- per-question states (primed by chain.js / origin.js) ---- */
@@ -280,31 +257,33 @@ function init(renderer) {
         sheetGroup.add(sh);
       });
       setAtoms(list, atoms);
-      /* Wavefronts: the incoming front strikes the whole stack at once;
-         each atom re-radiates, and the outgoing front stands up only
-         toward the detector angle where all the scattered waves arrive
-         in phase. Brightness = the same stack intensity the chart uses. */
+      /* No wavefront surfaces. One thin beam line marks the incident
+         direction from the source side; the wave itself is the atoms'
+         phase pulse (updateQ1Fx). The detector plate sits along the
+         detector angle and lights with TOYS.sumWave's intensity — the
+         exact number the 2D detector panel prints as 検出される強さ
+         (the sum of the two neighbouring planes' waves), so the stage
+         and the panel always agree: full at the aligning angle, ~zero
+         at the cancelling angle. */
       const th = s.twoTheta * Math.PI / 360;
       const dirIn = new THREE.Vector3(Math.cos(th), -Math.sin(th), 0);
       const dirOut = new THREE.Vector3(Math.cos(th), Math.sin(th), 0);
       const topY = span * k / 2 + 0.1;
       const P = new THREE.Vector3(0.1, topY, 0);
-      let glow = 0;
-      if (TOYS) glow = TOYS.stackIntensity(s.twoTheta, offs);
-      const lamW = XRD.wavelength * k;
-      const inMat = new THREE.MeshBasicMaterial({ color: 0xffdf8a, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
-      const outMat = new THREE.MeshBasicMaterial({ color: 0xbfe6ff, transparent: true, opacity: 0.05 + 0.5 * glow, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
-      const inComb = waveComb(dirIn, inMat, -3.6, 0, lamW);
-      const outComb = waveComb(dirOut, outMat, 0, 3.6, lamW);
-      inComb.position.copy(P);
-      outComb.position.copy(P);
-      const detMat = new THREE.MeshStandardMaterial({ color: 0x2a3440, emissive: 0xffc66b, emissiveIntensity: 2.2 * glow, metalness: 0.4, roughness: 0.5 });
-      const det = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.85, 0.1), detMat);
+      const glow = TOYS ? TOYS.sumWave(s.d, s.twoTheta).intensity : 0;
+      const beamGeo = new THREE.BufferGeometry().setFromPoints([
+        P.clone().addScaledVector(dirIn, -3.4), P.clone()
+      ]);
+      const beam = new THREE.Line(beamGeo, new THREE.LineBasicMaterial({ color: 0xffdf8a, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }));
+      beam.userData.ownMat = true;
+      waveGroup.add(beam);
+      const detMat = new THREE.MeshStandardMaterial({ color: 0x2a3440, emissive: 0xffc66b, emissiveIntensity: 2.4 * glow, metalness: 0.4, roughness: 0.5 });
+      const det = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.1), detMat);
       det.userData.ownMat = true;
-      det.position.copy(P).addScaledVector(dirOut, 4.1);
+      det.position.copy(P).addScaledVector(dirOut, 2.4);
       det.lookAt(P);
       waveGroup.add(det);
-      q1fx = { inComb, outComb, P, dirIn, dirOut, lamW, gap: inComb.userData.gap, ys: list.map(p => p[1]), k, twoTheta: s.twoTheta };
+      q1fx = { P, dirIn, dirOut, ys: list.map(p => p[1]), k, twoTheta: s.twoTheta, detMat, glow };
     } else {
       /* cubic modes q2/q3/q4/origin/q5 */
       const a = mode === 'q3' ? (s.mode === 'nacl' ? 5.64 : 4) : (s.a != null ? s.a : 4);
