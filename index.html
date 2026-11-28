@@ -4,6 +4,7 @@
 <header><div class="brand">よこぼのAIラボ <span>/ XRD PLAYGROUND</span></div><span class="duration">問いを1つずつ潰していくXRD入門</span></header>
 <div class="intro"><h1>結晶をさわる、<br class="mobile">ピークが変わる。</h1><p>XRDは、X線が強く届く角度を測る方法。<br>「そもそもピークって何なのか」という問いから、1つずつ確かめていこう。</p></div>
 <nav class="chain-toc" aria-label="問いの鎖">
+<a href="#q0"><b>問い 0</b> まず測ってみる <span>装置を動かす → チャートが出る</span></a>
 <a href="#q1"><b>問い 1</b> そもそもピークってなんなん？ <span>規則性がピークのもと</span></a>
 <a href="#q2"><b>問い 2</b> ピークの横の位置ってなんなん？ <span>位置 ＝ そろう角度</span></a>
 <a href="#q3"><b>問い 3</b> でも実際はピークいっぱい出るやん、なんで？ <span>高次 ＋ 面の組の多さ</span></a>
@@ -11,6 +12,25 @@
 <a href="#q5"><b>問い 5</b> もう少し複雑ならどうなるん？ <span>増える・消える・指紋</span></a>
 <a href="#deepdive"><b>深掘り</b> もっと触る・実務の話 <span>実験と解説の置き場</span></a>
 </nav>
+<section id="q0" class="qsection" aria-labelledby="q0-title">
+ <div class="task"><div><span class="eyebrow">問い 0 / まず全体像</span><h2 id="q0-title">まず測ってみる</h2></div></div>
+ <div class="workspace">
+  <section class="real"><div class="section-label"><span>装置の模式図（透過法・検出器が動くタイプ）</span><span>検出器の動きは右のグラフと連動</span></div><svg id="q0-instrument" role="img" aria-label="透過法のX線回折装置の模式図。試料を通り抜けたX線を、弧の上を動く検出器が角度ごとに受ける"></svg>
+   <div class="controls">
+    <span style="font-size:14px">試料を選ぶ</span>
+    <div class="button-row"><button data-q0-sample="salt" aria-pressed="true">塩（NaCl）</button><button data-q0-sample="metal" aria-pressed="false">金属（体心の並び）</button><button data-q0-sample="big" aria-pressed="false">大きな結晶（大きいセル）</button></div>
+    <p id="q0-sample-note" class="controls-note"></p>
+    <div class="button-row"><button id="q0-start" class="primary">測定スタート</button></div>
+    <p class="controls-note">パラメーターはいじらない。まずは「装置を動かすと、こういう図がまるごと出る」だけを体験する。トレースの細かいバラつきは、光子を数える測定らしいノイズ（模式）。ピークの位置と高さは、このページの物理モデルそのもの。</p>
+   </div>
+  </section>
+  <section class="reciprocal"><div class="section-label"><span>出てくるチャート</span><span>走査した範囲だけ描かれる</span></div><svg id="q0-plot" role="img" aria-label="検出器の走査に合わせて左から育っていく粉末XRDパターン"></svg>
+   <p id="q0-status" class="diff-line" aria-live="polite"></p>
+  </section>
+ </div>
+ <div class="answer">いま出た図、ピークはなぜここに、なぜ何本も出るのか。下で1つずつほどいていく。</div>
+ <div class="nextq"><a href="#q1">最初の問い：そもそもピークってなんなん？ →</a></div>
+</section>
 <section id="q1" class="qsection" aria-labelledby="q1-title">
  <div class="task"><div><span class="eyebrow">問い 1 / 波がそろうとは、どういうことか</span><h2 id="q1-title">そもそもピークってなんなん？</h2></div><button id="q1-reset" class="quiet">最初に戻す</button></div>
  <div class="workspace">

@@ -11,6 +11,8 @@ nav.chain-toc a span{color:var(--muted);font-size:12px;margin-left:auto;text-ali
 .nextq{display:flex;justify-content:flex-end;margin-top:14px}
 .nextq a{display:inline-block;border:1px solid var(--cyan);color:var(--cyan);border-radius:8px;padding:10px 18px;text-decoration:none;font-size:14px;min-height:44px}
 .nextq a:hover{background:#173a43}
+#q0-instrument{height:230px}#q0-plot{height:290px}
+#q0 button:disabled{opacity:.45;cursor:default}
 #q1-scene{height:300px}#q1-detector{height:196px}#q1-stack{height:190px}
 #q2-planes{height:230px}#q2-plot{height:250px}
 #q3-plot{height:290px}#q5-plot{height:290px}
@@ -27,6 +29,7 @@ nav.chain-toc a span{color:var(--muted);font-size:12px;margin-left:auto;text-ali
 @media(max-width:620px){
  nav.chain-toc a{font-size:14px;padding:10px 12px}
  nav.chain-toc a span{display:none}
+ #q0-instrument{height:200px}#q0-plot{height:240px}
  #q1-scene{height:250px}#q1-detector{height:180px}#q1-stack{height:170px}
  #q2-planes{height:200px}#q2-plot{height:230px}
  #q3-plot{height:230px}#q5-plot{height:230px}

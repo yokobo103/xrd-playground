@@ -7,6 +7,107 @@
  const path=(d,color,width=2,extra='')=>`<path d="${d}" fill="none" stroke="${color}" stroke-width="${width}" ${extra}/>`;
  function frame(id){const el=$(id);if(!el)return null;const w=el.clientWidth,h=el.clientHeight;el.setAttribute('viewBox',`0 0 ${w} ${h}`);return {el,w,h};}
 
+ /* ================= Q0: measure first — the scan grows the whole pattern ================= */
+ const q0samples={
+  salt:{label:'塩（NaCl）', note:'食塩。2種類の原子が、規則正しく交互に並んだ結晶。', peaks:()=>TOYS.naclFamilies(60)},
+  metal:{label:'金属（体心の並び）', note:'真ん中にも原子が入った並び方。鉄など金属に多いタイプ。', peaks:()=>TOYS.families(4,1,60)},
+  big:{label:'大きな結晶（大きいセル）', note:'1つの単位（セル）が大きい結晶。面の組がたくさんある。', peaks:()=>TOYS.families(8,0,60)}
+ };
+ const q0={ sample:'salt', phase:'idle', scanX:15, trace:null, peaks:[], seed:11 };
+ function q0rng(seed){ let t=seed>>>0; return ()=>{ t+=0x6D2B79F5; let r=Math.imul(t^t>>>15,1|t); r^=r+Math.imul(r^r>>>7,61|r); return ((r^r>>>14)>>>0)/4294967296; }; }
+ function q0BuildTrace(){
+  q0.peaks=q0samples[q0.sample].peaks();
+  const rand=q0rng(q0.seed), pts=[], N=1600;
+  for(let i=0;i<=N;i++){ const x=15+75*i/N, v=XRD.intensity(x,q0.peaks);
+   const amp=0.006+0.085*Math.sqrt(Math.max(v,0));
+   pts.push([x, Math.max(0, v+(rand()*2-1)*amp)]); }
+  q0.trace=pts;
+ }
+ function q0Instrument(){
+  const f=frame('q0-instrument'); if(!f) return; const {el,w,h}=f;
+  const sx=w*0.40, sy=h*0.60, R=Math.min(w*0.34, sy-16);
+  const ang=q0.scanX*Math.PI/180, dx=sx+R*Math.cos(ang), dy=sy-R*Math.sin(ang);
+  let svg='';
+  let arc=''; for(let a=0;a<=90;a+=5){ const px=sx+R*Math.cos(a*Math.PI/180), py=sy-R*Math.sin(a*Math.PI/180); arc+=(a?'L':'M')+px.toFixed(1)+' '+py.toFixed(1); }
+  svg+=path(arc,lineC,1.4,'stroke-dasharray="3 5"');
+  svg+=`<rect x="14" y="${sy-9}" width="28" height="18" fill="none" stroke="${muted}" stroke-width="1.6"/>`;
+  svg+=text(28, sy+30, '線源', 'text-anchor="middle" style="font-size:11px;fill:#a8bbce"');
+  svg+=seg([42,sy],[sx,sy],gold,'stroke-width="2.5"');
+  svg+=seg([sx,sy],[w-14,sy],gold,'stroke-width="1.4" stroke-dasharray="4 5" opacity=".65"');
+  svg+=text(w-14, sy+30, '直進ビーム', 'text-anchor="end" style="font-size:11px;fill:#a8bbce"');
+  svg+=seg([sx,sy-30],[sx,sy+30],cyan,'stroke-width="4"');
+  svg+=text(sx, sy+48, '試料', 'text-anchor="middle" style="font-size:11px;fill:#a8bbce"');
+  svg+=seg([sx,sy],[dx,dy],gold,'stroke-width="2.5"');
+  let small=''; for(let a=0;a<=q0.scanX;a+=3){ const px=sx+40*Math.cos(a*Math.PI/180), py=sy-40*Math.sin(a*Math.PI/180); small+=(a?'L':'M')+px.toFixed(1)+' '+py.toFixed(1); }
+  svg+=path(small,muted,1.2);
+  svg+=text(sx+54, sy-16, '2θ', 'style="font-size:12px;fill:#eaf6ff"');
+  svg+=`<g transform="translate(${dx.toFixed(1)} ${dy.toFixed(1)}) rotate(${(-q0.scanX).toFixed(1)})"><rect x="-12" y="-6" width="24" height="12" fill="#b5a1ff" stroke="#0b1421" stroke-width="1"/></g>`;
+  svg+=text(dx, dy-14, '検出器', 'text-anchor="middle" style="font-size:11px;fill:#a8bbce"');
+  svg+=text(10, 16, `検出器の角度 2θ = ${q0.scanX.toFixed(1)}°`, 'style="font-size:12px;fill:#a8bbce"');
+  el.innerHTML=svg;
+ }
+ function q0Plot(){
+  const f=frame('q0-plot'); if(!f) return; const {el,w,h}=f;
+  const range=[15,90], left=46,right=w-12,top=26,bottom=h-38, ymax=1.15;
+  const xx=x=>left+(x-range[0])/(range[1]-range[0])*(right-left), yy=v=>bottom-v/ymax*(bottom-top);
+  let svg=`<defs><clipPath id="q0-clip"><rect x="${left}" y="${top}" width="${right-left}" height="${bottom-top}"/></clipPath></defs>`;
+  svg+=text(left,15,'相対強度','style="font-size:12px;fill:#a8bbce"');
+  for(const v of [0,.5,1]){ svg+=seg([left,yy(v)],[right,yy(v)],lineC)+text(left-7,yy(v)+4,v.toFixed(1),'text-anchor="end" style="font-size:12px"'); }
+  for(const t of [20,40,60,80]) svg+=text(xx(t),bottom+19,String(t),'text-anchor="middle" style="font-size:12px"');
+  svg+=text((left+right)/2,h-2,'検出器の角度 2θ（°）','text-anchor="middle" style="font-size:12px"');
+  svg+=text(right,15,q0samples[q0.sample].label,'text-anchor="end" style="font-size:12px;fill:#a8bbce"');
+  svg+='<g clip-path="url(#q0-clip)">';
+  if(q0.trace){
+   let d=''; for(const pt of q0.trace){ if(pt[0]>q0.scanX+1e-9) break; d+=(d?'L':'M')+xx(pt[0]).toFixed(1)+' '+yy(pt[1]).toFixed(1); }
+   if(d) svg+=path(d,cyan,2);
+   if(q0.phase==='scanning') svg+=seg([xx(q0.scanX),top],[xx(q0.scanX),bottom],gold,'stroke-dasharray="3 4" opacity=".85"');
+   if(q0.phase==='done'){ for(const g of q0.peaks){ if(g.area<=1e-6) continue; svg+=`<circle cx="${xx(g.x).toFixed(1)}" cy="${yy(XRD.intensity(g.x,[g])).toFixed(1)}" r="3" fill="${cyan}"/>`; } }
+  } else {
+   svg+=text((left+right)/2,(top+bottom)/2,'まだ測っていません','text-anchor="middle" style="font-size:13px;fill:#a8bbce"');
+  }
+  svg+='</g>';
+  el.innerHTML=svg;
+ }
+ function q0Render(){ q0Instrument(); q0Plot(); }
+ function q0SetSample(key){
+  if(q0.phase==='scanning') return;
+  q0.sample=key; q0.phase='idle'; q0.scanX=15; q0.trace=null; q0.peaks=q0samples[key].peaks();
+  document.querySelectorAll('[data-q0-sample]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.q0Sample===key));
+  $('q0-sample-note').textContent=q0samples[key].note;
+  $('q0-start').textContent='測定スタート';
+  $('q0-status').innerHTML='試料を選んで「測定スタート」を押すと、検出器が角度を掃いて、パターンが育っていきます。';
+  q0Render();
+ }
+ function q0Finish(){
+  q0.phase='done'; q0.scanX=90;
+  const n=q0.peaks.filter(g=>g.area>1e-6).length;
+  const btn=$('q0-start'); btn.disabled=false; btn.textContent='もう一度測る';
+  document.querySelectorAll('[data-q0-sample]').forEach(b=>b.disabled=false);
+  $('q0-status').innerHTML=`測り終わった。<strong>${q0samples[q0.sample].label}</strong> のピークは <strong>${n} 本</strong>。この図が、このページでほどいていく題材です。`;
+  q0Render();
+ }
+ function q0Start(){
+  if(q0.phase==='scanning') return;
+  q0BuildTrace(); q0.seed+=13; q0.phase='scanning'; q0.scanX=15;
+  const btn=$('q0-start'); btn.disabled=true; btn.textContent='測定中…';
+  document.querySelectorAll('[data-q0-sample]').forEach(b=>b.disabled=true);
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ q0Finish(); return; }
+  const t0=performance.now(), DUR=9000;
+  (function step(now){
+   if(q0.phase!=='scanning') return;
+   const p=Math.min(1,(now-t0)/DUR); q0.scanX=15+75*p;
+   $('q0-status').innerHTML=`測定中… 検出器は 2θ = <strong>${q0.scanX.toFixed(1)}°</strong> を走査中`;
+   q0Render();
+   if(p<1) requestAnimationFrame(step); else q0Finish();
+  })(t0);
+ }
+ if($('q0-plot')){
+  document.querySelectorAll('[data-q0-sample]').forEach(b=>b.onclick=()=>q0SetSample(b.dataset.q0Sample));
+  $('q0-start').onclick=q0Start;
+  new ResizeObserver(q0Render).observe($('q0'));
+  q0SetSample('salt');
+ }
+
  /* ================= Q1: Bragg two-plane toy + regularity strip ================= */
  const q1={ d:4, twoTheta:TOYS.alignedAngle(4,1), planes:16, jitter:0, time:0 };
  function q1Scene(){
