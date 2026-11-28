@@ -384,24 +384,38 @@ function init(renderer) {
   }
 
   /* Wave system (beat d): WAVEFRONTS, not a ray at one atom.
-     Two combs of parallel planes sweep along the incident / scattered
+     A few parallel planes sweep along the incident / scattered
      directions. Every atom's instance colour is driven by the total
      (incident - scattered) phase at its own position, so at the Bragg
-     angle all 216 atoms pulse in unison and the outgoing comb stands
+     angle all 216 atoms pulse in unison and the outgoing fronts stand
      up bright; off that angle the layers shimmer out of phase and the
-     outgoing comb stays faint. The detector plate lights with the same
-     stack intensity physics.js computes. */
+     outgoing fronts stay faint. The detector plate lights with the
+     same stack intensity physics.js computes. */
   const waveG = new THREE.Group();
   micro.add(waveG);
+  /* How many wavefronts to draw. The user's call: the original dense
+     comb of ~25 fronts was too much here — 2-3 quiet fronts are
+     enough. The comb is NOT deleted: set WAVE_MODE to 'comb' and the
+     dense wavefront train returns unchanged (the technique may suit
+     another scene later). One constant flips between the two. */
+  const WAVE_MODE = 'few';        // 'few' (default) | 'comb' (preserved)
+  const WAVE_FEW_COUNT = 3;       // fronts drawn in 'few' mode
+  const WAVE_COMB_COUNT = 25;     // fronts in the preserved comb mode
+  const WAVE_FEW_GAP = 8;         // 'few' spacing, in wavelengths
   function wavefronts(mat) {
     const g = new THREE.Group();
-    const geo = new THREE.PlaneGeometry(7.6, 7.6);
-    const n = 25, span = LAM_W * (n - 1);
+    const comb = WAVE_MODE === 'comb';
+    const n = comb ? WAVE_COMB_COUNT : WAVE_FEW_COUNT;
+    const gap = comb ? LAM_W : LAM_W * WAVE_FEW_GAP;
+    const size = comb ? 7.6 : 5.4;
+    const geo = new THREE.PlaneGeometry(size, size);
+    const span = gap * (n - 1);
     for (let k = 0; k < n; k++) {
       const m = new THREE.Mesh(geo, mat);
-      m.position.z = -span / 2 + k * LAM_W;
+      m.position.z = -span / 2 + k * gap;
       g.add(m);
     }
+    g.userData.gap = gap;
     return g;
   }
   const inMat = new THREE.MeshBasicMaterial({ color: 0xffdf8a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
@@ -431,7 +445,7 @@ function init(renderer) {
     }
     pulseWasOn = true;
     const th = st.det * Math.PI / 360, s = Math.sin(th), c = Math.cos(th);
-    const off = reduceMotion ? 0 : (tsec * 0.55) % LAM_W;
+    const off = reduceMotion ? 0 : (tsec * 0.55) % inComb.userData.gap;
     _dir.set(c, -s, 0);
     inComb.quaternion.copy(_q.setFromUnitVectors(_zAxis, _dir));
     inComb.position.copy(_dir).multiplyScalar(off);

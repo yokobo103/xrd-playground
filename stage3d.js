@@ -181,26 +181,42 @@ function init(renderer) {
     return { ls, corners, centres };
   }
 
-  /* Wavefront comb for Q1: parallel planes sweeping along a direction,
-     spaced by one wavelength (in world units). The wave is a front that
-     meets the whole plane stack at once — never a ray at a single atom. */
+  /* Wavefronts for Q1: parallel planes sweeping along a direction.
+     The wave is a front that meets the whole plane stack at once —
+     never a ray at a single atom.
+     How many fronts: the user's call — the dense comb (one front per
+     wavelength across the whole path) was too much; 3 quiet fronts
+     spread over the path are the default. The comb is NOT deleted:
+     set WAVE_MODE to 'comb' and the original dense train returns. */
+  const WAVE_MODE = 'few';   // 'few' (default) | 'comb' (preserved)
+  const WAVE_FRONTS = 3;     // fronts drawn in 'few' mode
   let q1fx = null;
   function waveComb(dir, mat, zFrom, zTo, lamW) {
     const g = new THREE.Group();
     const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
     g.quaternion.copy(q);
-    for (let z = zFrom; z <= zTo; z += lamW) {
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 3.2), mat);
+    const comb = WAVE_MODE === 'comb';
+    const w = comb ? 5.6 : 4.8, h = comb ? 3.2 : 2.6;
+    function addFront(z) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
       m.position.z = z;
       m.userData.ownMat = true;
       g.add(m);
     }
+    let gap = lamW;
+    if (comb) {
+      for (let z = zFrom; z <= zTo; z += lamW) addFront(z);
+    } else {
+      gap = WAVE_FRONTS > 1 ? (zTo - zFrom) / (WAVE_FRONTS - 1) : 0;
+      for (let i = 0; i < WAVE_FRONTS; i++) addFront(zFrom + gap * i);
+    }
+    g.userData.gap = gap;
     waveGroup.add(g);
     return g;
   }
   function updateQ1Fx(t) {
     if (!q1fx) return;
-    const off = (t * 0.55) % q1fx.lamW;
+    const off = (t * 0.55) % (q1fx.gap || q1fx.lamW);
     q1fx.inComb.position.copy(q1fx.P).addScaledVector(q1fx.dirIn, off);
     q1fx.outComb.position.copy(q1fx.P).addScaledVector(q1fx.dirOut, off);
     /* Every atom's colour follows the total (incident - scattered) phase
@@ -288,7 +304,7 @@ function init(renderer) {
       det.position.copy(P).addScaledVector(dirOut, 4.1);
       det.lookAt(P);
       waveGroup.add(det);
-      q1fx = { inComb, outComb, P, dirIn, dirOut, lamW, ys: list.map(p => p[1]), k, twoTheta: s.twoTheta };
+      q1fx = { inComb, outComb, P, dirIn, dirOut, lamW, gap: inComb.userData.gap, ys: list.map(p => p[1]), k, twoTheta: s.twoTheta };
     } else {
       /* cubic modes q2/q3/q4/origin/q5 */
       const a = mode === 'q3' ? (s.mode === 'nacl' ? 5.64 : 4) : (s.a != null ? s.a : 4);
