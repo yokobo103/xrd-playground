@@ -60,6 +60,7 @@
   $('combined-a').value=model.a;$('combined-a-value').textContent=model.a.toFixed(2)+' Å';$('combined-center').value=model.center;$('combined-center-value').textContent=Math.round(model.center*100)+'%';$('combined-size').value=model.size;$('combined-size-value').textContent=model.size+' nm';$('orbit').value=model.orbit;
   $('origin-structure').textContent=model.center===0?'単純立方・2 × 2 × 2 単位格子':model.center===1?'体心立方・2 × 2 × 2 単位格子':'中央の原子の入り具合を変化中';
   cube('origin-lattice');chart(peaks);bonus();
+  if(window.Stage3D)Stage3D.origin({a:model.a,center:model.center,name:model.name});
  }
  for(const id of ['plane-controls','indices-presets'])$(id).innerHTML=presets.map(name=>`<button type="button" data-plane="${name}" aria-pressed="${name===model.name}">(${name})</button>`).join('');
  document.querySelectorAll('[data-plane]').forEach(b=>b.onclick=()=>select(b.dataset.plane));
@@ -72,5 +73,6 @@
  if($('origin-tab'))$('origin-tab').onclick=()=>window.showOrigin();
  $('origin-reset').onclick=()=>{model={a:4,center:0,size:60,name:'100',orbit:32};ghostA=4;committedA=4;render();};
  if($('combined-a'))$('combined-a').addEventListener('change',()=>{ghostA=model.a;committedA=model.a;render();});
+ window.addEventListener('stage3d-ready',()=>render());
  new ResizeObserver(render).observe($('origin'));render();
 })();

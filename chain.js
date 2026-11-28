@@ -197,13 +197,18 @@
   let d=''; pts.forEach((p,i)=>{ d+=(i?'L':'M')+x(p[0]).toFixed(1)+' '+y(Math.min(1,p[1])).toFixed(1); });
   svg+=path(d,cyan,2.2);
   const pk=TOYS.alignedAngle(q1.d,1); svg+=seg([x(pk),top],[x(pk),bottom],gold,'stroke-dasharray="3 4" opacity=".7"');
+  // marks of every aligning angle (orders 1..3): they accumulate on the axis
+  // and stand exactly where the curve's peaks rise.
+  for(let n=1;n<=3;n++){ const a=TOYS.alignedAngle(q1.d,n); if(!Number.isFinite(a)||a<10||a>40) continue;
+    svg+=seg([x(a),bottom-9],[x(a),bottom],gold,'stroke-width="2.6"'); }
   el.innerHTML=svg;
   const mx=Math.max(...pts.map(p=>p[1]));
   $('q1-stack-note').textContent = q1.jitter<=0.001
     ? `面 ${q1.planes} 枚・乱れなし：そろう角度（金色の破線）にだけ、鋭いピークが立つ。`
     : `面 ${q1.planes} 枚・乱れ ${Math.round(q1.jitter*100)}%：いちばん高い所でも ${Math.round(mx*100)}%。そろう角度が定まらず、ピークがなだらかになる。`;
  }
- function q1Render(){ q1Scene(); q1Detector(); q1Stack();
+ function q1Stage(){ if(window.Stage3D) Stage3D.q1({d:q1.d, planes:q1.planes, jitter:q1.jitter, twoTheta:q1.twoTheta}); }
+ function q1Render(){ q1Scene(); q1Detector(); q1Stack(); q1Stage();
   $('q1-d-value').textContent=q1.d.toFixed(2)+' Å';
   $('q1-ang-value').textContent=q1.twoTheta.toFixed(2)+'°';
   $('q1-jitter-value').textContent=Math.round(q1.jitter*100)+'%';
@@ -211,11 +216,11 @@
  }
  if($('q1-d')){
   $('q1-d').oninput=e=>{ q1.d=+e.target.value; q1Render(); };
-  $('q1-ang').oninput=e=>{ q1.twoTheta=+e.target.value; q1Scene(); q1Detector();
+  $('q1-ang').oninput=e=>{ q1.twoTheta=+e.target.value; q1Scene(); q1Detector(); q1Stage();
     $('q1-ang-value').textContent=q1.twoTheta.toFixed(2)+'°'; };
   $('q1-align').onclick=()=>{ q1.twoTheta=TOYS.nearestAligned(q1.d,q1.twoTheta); $('q1-ang').value=q1.twoTheta; q1Render(); };
   $('q1-cancel').onclick=()=>{ q1.twoTheta=TOYS.nearestCancelled(q1.d,q1.twoTheta); $('q1-ang').value=q1.twoTheta; q1Render(); };
-  $('q1-jitter').oninput=e=>{ q1.jitter=+e.target.value; q1Stack(); $('q1-jitter-value').textContent=Math.round(q1.jitter*100)+'%'; };
+  $('q1-jitter').oninput=e=>{ q1.jitter=+e.target.value; q1Stack(); q1Stage(); $('q1-jitter-value').textContent=Math.round(q1.jitter*100)+'%'; };
   document.querySelectorAll('[data-q1-planes]').forEach(b=>b.onclick=()=>{ q1.planes=+b.dataset.q1Planes; q1Render(); });
   $('q1-reset').onclick=()=>{ q1={...q1,d:4,twoTheta:TOYS.alignedAngle(4,1),planes:16,jitter:0}; $('q1-d').value=4; $('q1-ang').value=q1.twoTheta; $('q1-jitter').value=0; q1Render(); };
   new ResizeObserver(()=>{ q1Scene(); q1Detector(); q1Stack(); }).observe($('q1'));
@@ -265,7 +270,8 @@
     ? `基準は a = ${q2.a.toFixed(2)} Å、ピークは ${now.toFixed(2)}°。つまみを動かすと、前の位置が灰色で残る。`
     : `a ${q2.ghostA.toFixed(2)} → ${q2.a.toFixed(2)} Å：ピークは ${before.toFixed(2)}° → ${now.toFixed(2)}°（${d>0?'高角度':'低角度'}側へ ${d>=0?'+':''}${d.toFixed(2)}°）`;
  }
- function q2Render(){ q2Planes(); q2Plot(); $('q2-a-value').textContent=q2.a.toFixed(2)+' Å'; }
+ function q2Render(){ q2Planes(); q2Plot(); $('q2-a-value').textContent=q2.a.toFixed(2)+' Å';
+  if(window.Stage3D) Stage3D.q2({a:q2.a}); }
  if($('q2-a')){
   $('q2-a').oninput=e=>{ q2.a=+e.target.value; q2Render(); };
   $('q2-a').onchange=e=>{ q2.ghostA=q2.a; q2Plot(); };
@@ -296,9 +302,10 @@
   svg+='</g>';
   el.innerHTML=svg;
   $('q3-count').innerHTML=`いま <strong>${q3.count} 組</strong> ／ 全 ${groups.length} 組 ・ ピーク <strong>${included.filter(g=>g.area>1e-6).length} 本</strong>`+
-    (q3.higher?` ・ 金色は「同じ面の組の、高次（遠回り2波長・3波長…）」`:'');
+    (q3.higher?` ・ 金色は「最初の組と同じ向きで、間隔が半分・3分の1…の組」`:'');
  }
  function q3Render(){ q3Plot();
+  if(window.Stage3D) Stage3D.q3({groups:q3Groups().map(g=>({q:g.q,labels:g.labels})), count:q3.count, higher:q3.higher, mode:q3.mode});
   document.querySelectorAll('[data-q3-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.q3Mode===q3.mode));
   $('q3-higher').setAttribute('aria-pressed',q3.higher);
   $('q3-add').disabled=q3.count>=q3Groups().length; $('q3-remove').disabled=q3.count<=1;
@@ -344,10 +351,61 @@
   };
   $('q5-read').innerHTML=`<strong>${cur.label}</strong> ・ ピーク <strong>${vis} 本</strong>（灰色の破線は基準）。${notes[q5.key]}`;
  }
- function q5Render(){ q5Plot(); document.querySelectorAll('[data-q5]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.q5===q5.key)); }
+ function q5Render(){ q5Plot(); document.querySelectorAll('[data-q5]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.q5===q5.key));
+  if(window.Stage3D){ const cur=q5presets[q5.key]; Stage3D.q5({a:cur.a, center:cur.center}); } }
  if($('q5-plot')){
   document.querySelectorAll('[data-q5]').forEach(b=>b.onclick=()=>{ q5.key=b.dataset.q5; q5Render(); });
   new ResizeObserver(q5Render).observe($('q5'));
   q5Render();
  }
+
+ /* ================= Q4: peak heights — centre atoms & electron count ================= */
+ const q4={ center:0, escale:1 };
+ function q4Plot(){
+  const f=frame('q4-plot'); if(!f) return; const {el,w,h}=f;
+  const raw=XRD.reflections(4,q4.center,60).filter(p=>p.x<=90);
+  const groups=raw.map(g=>({...g, area:g.area*q4.escale*q4.escale}));
+  const extinct=raw.filter(g=>g.area<=1e-6);
+  const range=[15,90], left=46,right=w-12,top=26,bottom=h-38, ymax=1.15;
+  const xx=x=>left+(x-range[0])/(range[1]-range[0])*(right-left), yy=v=>bottom-v/ymax*(bottom-top);
+  let svg=`<defs><clipPath id="q4-clip"><rect x="${left}" y="${top}" width="${right-left}" height="${bottom-top}"/></clipPath></defs>`;
+  svg+=text(left,15,'相対強度','style="font-size:12px;fill:#a8bbce"');
+  for(const v of [0,.5,1]){ svg+=seg([left,yy(v)],[right,yy(v)],lineC)+text(left-7,yy(v)+4,v.toFixed(1),'text-anchor="end" style="font-size:12px"'); }
+  for(const t of [20,40,60,80]) svg+=text(xx(t),bottom+19,String(t),'text-anchor="middle" style="font-size:12px"');
+  svg+=text((left+right)/2,h-2,'検出器の角度 2θ（°）','text-anchor="middle" style="font-size:12px"');
+  let d=''; for(let i=0;i<=1500;i++){ const x=range[0]+(range[1]-range[0])*i/1500; d+=(i?'L':'M')+xx(x).toFixed(1)+' '+yy(XRD.intensity(x,groups)).toFixed(1); }
+  svg+='<g clip-path="url(#q4-clip)">'+path(d,cyan,2);
+  for(const g of extinct){ svg+=seg([xx(g.x),top+4],[xx(g.x),bottom],grey,'stroke-dasharray="3 5" opacity=".55"'); }
+  svg+='</g>';
+  for(const g of extinct) svg+=text(xx(g.x),bottom+32,'消','text-anchor="middle" style="font-size:10px;fill:#8fa3b8"');
+  el.innerHTML=svg;
+  const vis=raw.filter(g=>g.area>1e-6).length;
+  let msg;
+  if(q4.center>=0.999) msg=`中央にも原子が入った。打ち消し合う面の組のピークが <strong>${extinct.length} 本</strong>消えた（灰色の破線と「消」の目印）。残ったピークは <strong>${vis} 本</strong>、位置は動いていない。`;
+  else if(q4.center>0.001) msg=`中央に原子が入りかけている（${Math.round(q4.center*100)}%）。打ち消し合う面の組のピークが、だんだん弱まっていく。`;
+  else msg=`中央は空。全部の面の組がピークを出す（<strong>${vis} 本</strong>）。高さの違いは、面の組ごとの波の強め合い方と、原子の電子の多さで決まる。`;
+  if(q4.escale!==1) msg+=q4.escale>1?` 電子が多い原子にしたので、全体の高さが上がった。`:` 電子が少ない原子にしたので、全体の高さが下がった。`;
+  $('q4-read').innerHTML=msg;
+ }
+ function q4Render(){ q4Plot();
+  $('q4-center-value').textContent=Math.round(q4.center*100)+'%';
+  document.querySelectorAll('[data-q4-atom]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.q4Atom===q4.escale));
+  if(window.Stage3D) Stage3D.q4({a:4, center:q4.center, escale:q4.escale});
+ }
+ if($('q4-plot')){
+  $('q4-center').oninput=e=>{ q4.center=+e.target.value; q4Render(); };
+  document.querySelectorAll('[data-q4-atom]').forEach(b=>b.onclick=()=>{ q4.escale=+b.dataset.q4Atom; q4Render(); });
+  $('q4-reset').onclick=()=>{ q4.center=0; q4.escale=1; $('q4-center').value=0; q4Render(); };
+  new ResizeObserver(q4Render).observe($('q4'));
+  q4Render();
+ }
+
+ /* When the 3D stage finishes loading, push every current state into it. */
+ window.addEventListener('stage3d-ready', ()=>{
+  if($('q1-d')) q1Render();
+  if($('q2-a')) q2Render();
+  if($('q3-plot')) q3Render();
+  if($('q4-plot')) q4Render();
+  if($('q5-plot')) q5Render();
+ });
 })();

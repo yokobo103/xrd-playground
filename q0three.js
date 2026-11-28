@@ -21,6 +21,7 @@ const stage = $('q0-stage'), wrap = $('q0-3d');
 const statusEl = $('q0-status');
 const diveBtn = $('q0-dive'), backBtn = $('q0-back');
 const scaleChip = $('q0-scale'), landEl = $('q0-land'), fadeEl = $('q0-fade');
+const tubeNote = $('q0-tube-note'), tubeClose = $('q0-tube-close');
 const SCAN_FROM = 15;
 const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -190,17 +191,21 @@ function init(renderer) {
   const srcArm = buildArm(-1);
   const detArm = buildArm(1);
 
-  /* X-ray tube housing on the source arm (snout toward the centre). */
-  mesh(new RoundedBoxGeometry(1.6, 1.25, 1.35, 4, 0.09), M.enamel, -R_ARM, 0.12, 0, srcArm);
-  mesh(new THREE.BoxGeometry(1.62, 0.14, 1.37), M.accent, -R_ARM, -0.38, 0, srcArm);
-  mesh(new RoundedBoxGeometry(0.9, 0.6, 0.9, 2, 0.05), M.enamel2, -R_ARM - 0.15, 0.95, 0, srcArm);
+  /* X-ray tube housing on the source arm (snout toward the centre).
+     tubeHit collects its meshes for the tap-note raycast below. */
+  const tubeHit = [];
+  tubeHit.push(mesh(new RoundedBoxGeometry(1.6, 1.25, 1.35, 4, 0.09), M.enamel, -R_ARM, 0.12, 0, srcArm));
+  tubeHit.push(mesh(new THREE.BoxGeometry(1.62, 0.14, 1.37), M.accent, -R_ARM, -0.38, 0, srcArm));
+  tubeHit.push(mesh(new RoundedBoxGeometry(0.9, 0.6, 0.9, 2, 0.05), M.enamel2, -R_ARM - 0.15, 0.95, 0, srcArm));
   const snout = mesh(new THREE.CylinderGeometry(0.17, 0.21, 0.62, 24), M.steelD, -1.95, 0, 0, srcArm);
   snout.rotation.z = Math.PI / 2;
+  tubeHit.push(snout);
   const snoutTip = mesh(new THREE.CylinderGeometry(0.09, 0.13, 0.3, 20), M.steel, -1.5, 0, 0, srcArm);
   snoutTip.rotation.z = Math.PI / 2;
+  tubeHit.push(snoutTip);
   const tubeLed = mesh(new THREE.SphereGeometry(0.045, 12, 12), M.led, -R_ARM, 0.38, 0.7, srcArm);
   tubeLed.castShadow = false;
-  mesh(new RoundedBoxGeometry(0.5, 0.8, 0.9, 2, 0.04), M.enamel2, -R_ARM - 1.0, 0.05, 0, srcArm);
+  tubeHit.push(mesh(new RoundedBoxGeometry(0.5, 0.8, 0.9, 2, 0.04), M.enamel2, -R_ARM - 1.0, 0.05, 0, srcArm));
   const inCore = beamMesh(new THREE.CylinderGeometry(0.02, 0.02, 1.33, 8), M.beam, -0.685, 0, 0, srcArm);
   inCore.rotation.z = Math.PI / 2;
   const inHalo = beamMesh(new THREE.CylinderGeometry(0.06, 0.06, 1.33, 12), M.beamHalo, -0.685, 0, 0, srcArm);
@@ -515,6 +520,24 @@ function init(renderer) {
       setTimeout(() => { fadeEl.style.transition = 'none'; }, 500);
     }, 480);
   });
+
+  /* ---------------- Tap the tube housing: how the X-rays are made ----------------
+     A tap (not a drag) on the tube housing toggles a small note. Kept out
+     of the main flow on purpose: an optional aside, not a lesson step. */
+  if (tubeNote) {
+    const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+    let downAt = 0, downX = 0, downY = 0;
+    renderer.domElement.addEventListener('pointerdown', e => { downAt = performance.now(); downX = e.clientX; downY = e.clientY; });
+    renderer.domElement.addEventListener('pointerup', e => {
+      if (viewState !== 'device') return;
+      if (performance.now() - downAt > 400 || Math.hypot(e.clientX - downX, e.clientY - downY) > 6) return;
+      const r = renderer.domElement.getBoundingClientRect();
+      ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(ptr, camera);
+      if (ray.intersectObjects(tubeHit, false).length) tubeNote.hidden = !tubeNote.hidden;
+    });
+    if (tubeClose) tubeClose.addEventListener('click', () => { tubeNote.hidden = true; });
+  }
 
   /* ---------------- Public API for chain.js ---------------- */
   function setScanBusy(b) {

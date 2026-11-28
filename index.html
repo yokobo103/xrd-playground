@@ -1,21 +1,21 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>問いの鎖でたどるXRD｜XRD Playground</title><meta name="description" content="そもそもピークって何なのか、という問いから1つずつ。触れる玩具で答えを確かめながら、粉末XRDの読み方をたどる入門ページ。"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="origin.css"><link rel="stylesheet" href="chain.css"><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script><script defer src="physics.js"></script><script defer src="toys.js"></script><script defer src="chain.js"></script><script defer src="app.js"></script><script defer src="origin.js"></script><script defer src="bg.js"></script></head>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>問いの鎖でたどるXRD｜XRD Playground</title><meta name="description" content="そもそもピークって何なのか、という問いから1つずつ。触れる玩具で答えを確かめながら、粉末XRDの読み方をたどる入門ページ。"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="origin.css"><link rel="stylesheet" href="chain.css"><link rel="stylesheet" href="stage3d.css"><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script><script defer src="physics.js"></script><script defer src="toys.js"></script><script defer src="chain.js"></script><script defer src="app.js"></script><script defer src="origin.js"></script><script defer src="bg.js"></script></head>
 <body><main>
 <header><div class="brand">よこぼのAIラボ <span>/ XRD PLAYGROUND</span></div><span class="duration">問いを1つずつ潰していくXRD入門</span></header>
 <div class="intro"><h1>結晶をさわる、<br class="mobile">ピークが変わる。</h1><p>XRDは、X線が強く届く角度を測る方法。<br>「そもそもピークって何なのか」という問いから、1つずつ確かめていこう。</p></div>
 <nav class="chain-toc" aria-label="問いの鎖">
 <a href="#q0"><b>問い 0</b> まず測ってみる <span>装置を動かす → チャートが出る</span></a>
-<a href="#q1"><b>問い 1</b> そもそもピークってなんなん？ <span>規則性がピークのもと</span></a>
-<a href="#q2"><b>問い 2</b> ピークの横の位置ってなんなん？ <span>位置 ＝ そろう角度</span></a>
-<a href="#q3"><b>問い 3</b> でも実際はピークいっぱい出るやん、なんで？ <span>高次 ＋ 面の組の多さ</span></a>
-<a href="#origin"><b>問い 4</b> 面の話（マニアックだけど3の理解につながる） <span>ピーク ⇔ 面の組</span></a>
+<a href="#q1"><b>問い 1</b> ピークってそもそもなんなん？ <span>規則性がピークのもと</span></a>
+<a href="#q2"><b>問い 2</b> ある角度って、どう決まってるん？ <span>面同士の距離で決まる</span></a>
+<a href="#q3"><b>問い 3</b> なんで複数ピーク出るん？ <span>面の組の多さ</span></a>
+<a href="#q4"><b>問い 4</b> なんで高さが違うん？ 消えるやつもあるし <span>強さと、消えるピーク</span></a>
 <a href="#q5"><b>問い 5</b> もう少し複雑ならどうなるん？ <span>増える・消える・指紋</span></a>
-<a href="#deepdive"><b>深掘り</b> もっと触る・実務の話 <span>実験と解説の置き場</span></a>
+<a href="#deepdive"><b>深掘り</b> もっと触る・実務の話 <span>実験・面の名前・実務の話</span></a>
 </nav>
 <section id="q0" class="qsection" aria-labelledby="q0-title">
  <div class="task"><div><span class="eyebrow">問い 0 / まず全体像</span><h2 id="q0-title">まず測ってみる</h2></div></div>
  <div class="workspace">
-  <section class="real"><div class="section-label"><span id="q0-inst-label">装置の模式図（透過法・検出器が動くタイプ）</span><span id="q0-inst-sub">検出器の動きは右のグラフと連動</span></div><div id="q0-3d" hidden><div id="q0-stage"><div class="q0-chip">反射法 ・ θ-θゴニオメーター（アーム連動・模式）</div><div class="q0-hint">ドラッグで回転 ／ ピンチ・ホイールで拡大</div><div id="q0-scale"></div><div id="q0-land"><p id="q0-caption">ここが問い1の世界。面の積み重なりで、波がそろう</p><a id="q0-tonext" href="#q1">問い1へ進む →</a></div><div id="q0-fade"></div></div><div class="button-row"><button id="q0-dive">試料の中をのぞく</button><button id="q0-back" style="display:none">装置に戻る</button></div></div><svg id="q0-instrument" role="img" aria-label="透過法のX線回折装置の模式図。試料を通り抜けたX線を、弧の上を動く検出器が角度ごとに受ける"></svg>
+  <section class="real"><div class="section-label"><span id="q0-inst-label">装置の模式図（透過法・検出器が動くタイプ）</span><span id="q0-inst-sub">検出器の動きは右のグラフと連動</span></div><div id="q0-3d" hidden><div id="q0-stage"><div class="q0-chip">反射法 ・ θ-θゴニオメーター（アーム連動・模式）</div><div class="q0-hint">ドラッグで回転 ／ X線管をタップすると注記</div><div id="q0-scale"></div><div id="q0-land"><p id="q0-caption">ここが問い1の世界。面の積み重なりで、波がそろう</p><a id="q0-tonext" href="#q1">問い1へ進む →</a></div><div id="q0-tube-note" hidden><b>X線は、ここで作る</b><br>電子を金属（銅）のターゲットにぶつけると、飛び出した電子の穴へ外側の電子が落ちる時に、決まった波長のX線が出る（特性X線 Cu Kα）。このページの波長 λ = 1.5406 Å は、その値です。<button id="q0-tube-close" type="button">閉じる</button></div><div id="q0-fade"></div></div><div class="button-row"><button id="q0-dive">試料の中をのぞく</button><button id="q0-back" style="display:none">装置に戻る</button></div></div><svg id="q0-instrument" role="img" aria-label="透過法のX線回折装置の模式図。試料を通り抜けたX線を、弧の上を動く検出器が角度ごとに受ける"></svg>
    <div class="controls">
     <span style="font-size:14px">試料を選ぶ</span>
     <div class="button-row"><button data-q0-sample="salt" aria-pressed="true">塩（NaCl）</button><button data-q0-sample="metal" aria-pressed="false">金属（体心の並び）</button><button data-q0-sample="big" aria-pressed="false">大きな結晶（大きいセル）</button></div>
@@ -32,9 +32,9 @@
  <div class="nextq"><a href="#q1">最初の問い：そもそもピークってなんなん？ →</a></div>
 </section>
 <section id="q1" class="qsection" aria-labelledby="q1-title">
- <div class="task"><div><span class="eyebrow">問い 1 / 波がそろうとは、どういうことか</span><h2 id="q1-title">そもそもピークってなんなん？</h2></div><button id="q1-reset" class="quiet">最初に戻す</button></div>
+ <div class="task"><div><span class="eyebrow">問い 1 / 波がそろうとは、どういうことか</span><h2 id="q1-title">ピークってそもそもなんなん？</h2></div><button id="q1-reset" class="quiet">最初に戻す</button></div>
  <div class="workspace">
-  <section class="real"><div class="section-label"><span>隣り合う2枚の面で、波に何が起きるか</span><span>紫 = 下の面の波の「遠回り」</span></div><svg id="q1-scene" role="img" aria-label="2枚の平行な面で散乱するX線の波。面に沿ってサイン波を描き、遠回りには波長の目盛りを刻んだ図"></svg>
+  <section class="real"><div class="section-label"><span>結晶の中（舞台）</span><span>面の積み重なりと波</span></div><div class="stage-slot" data-stage-slot="q1"></div><svg id="q1-scene" role="img" aria-label="2枚の平行な面で散乱するX線の波。面に沿ってサイン波を描き、遠回りには波長の目盛りを刻んだ図"></svg>
    <div class="controls">
     <label for="q1-d">面の間隔 d <output id="q1-d-value"></output></label><input id="q1-d" type="range" min="2.5" max="6" step=".01" value="4"><div class="ends"><span>狭い 2.5 Å</span><span>広い 6 Å</span></div>
     <label for="q1-ang">検出器の角度 2θ <output id="q1-ang-value"></output></label><input id="q1-ang" type="range" min="12" max="45" step=".01" value="22.21"><div class="ends"><span>12°</span><span>45°</span></div>
@@ -60,12 +60,12 @@
   <section class="reciprocal"><div class="section-label"><span>角度ごとの、足し合わせた強さ</span><span>金色の破線 = そろう角度</span></div><svg id="q1-stack" role="img" aria-label="面の枚数と並びの乱れに対する、角度ごとの合計強度"></svg><p id="q1-stack-note" class="controls-note" aria-live="polite"></p></section>
  </div>
  <div class="answer"><b>確かめ：</b>バラバラな並びからは、ピークは生まれない。規則性がピークのもと ― これが問1の答え。</div>
- <div class="nextq"><a href="#q2">次の問い：ピークの横の位置ってなんなん？ →</a></div>
+ <div class="nextq"><a href="#q2">次の問い：ある角度って、どう決まってるん？ →</a></div>
 </section>
 <section id="q2" class="qsection" aria-labelledby="q2-title">
- <div class="task"><div><span class="eyebrow">問い 2 / 位置の正体</span><h2 id="q2-title">ピークの横の位置ってなんなん？</h2></div><button id="q2-reset" class="quiet">最初に戻す</button></div>
+ <div class="task"><div><span class="eyebrow">問い 2 / その角度の決まり方</span><h2 id="q2-title">ある角度って、どう決まってるん？</h2></div><button id="q2-reset" class="quiet">最初に戻す</button></div>
  <div class="workspace">
-  <section class="real"><div class="section-label"><span>結晶の中（1組の面だけ）</span><span>単純立方格子・断面</span></div><svg id="q2-planes" role="img" aria-label="面間隔を変えられる結晶断面と、波がそろう角度の模式図"></svg>
+  <section class="real"><div class="section-label"><span>結晶の中（舞台）</span><span>1組の面と、そろう角度</span></div><div class="stage-slot" data-stage-slot="q2"></div><svg id="q2-planes" role="img" aria-label="面間隔を変えられる結晶断面と、波がそろう角度の模式図"></svg>
    <div class="controls">
     <label for="q2-a">結晶全体の間隔 a <output id="q2-a-value"></output></label><input id="q2-a" type="range" min="3.2" max="5" step=".01" value="4"><div class="ends"><span>狭い</span><span>広い</span></div>
     <div class="button-row"><button id="q2-commit">この位置を基準にする</button></div>
@@ -79,17 +79,17 @@
  <div class="answer"><b>答え：</b>ピークの横の位置は、「波がそろう角度」そのもの。面間隔が狭い → そろう角度は大きい。横軸の <b>2θ</b> は、検出器が直進方向からどれだけ回ったか、その角度をそのまま書いているだけ。</div>
  <details><summary>そもそも「2θ」って何の角度？</summary><p><b>2θ は、入ってきたX線と、散乱されたX線のなす角度</b>。装置が測って、グラフの横軸になるのはこの 2θ の方です。一方、ブラッグの式 2d sin θ = λ の θ は、X線と結晶の面のなす角度で、2θ のちょうど半分。式の θ とグラフの 2θ が別物なのは、このためです。</p><svg viewBox="0 0 340 120" role="img" aria-label="2θとθの関係を示す模式図" style="width:100%;max-width:420px;display:block;margin:4px auto"><line x1="117" y1="96" x2="203" y2="54" stroke="#62e6e0" stroke-width="2.5"/><line x1="20" y1="75" x2="160" y2="75" stroke="#ffc66b" stroke-width="2.5"/><line x1="160" y1="75" x2="252" y2="75" stroke="#ffc66b" stroke-width="1.5" stroke-dasharray="4 4"/><line x1="160" y1="75" x2="210" y2="15" stroke="#ffc66b" stroke-width="2.5"/><path d="M 130 75 A 30 30 0 0 0 133 88" fill="none" stroke="#a8bbce" stroke-width="1.5"/><path d="M 215 75 A 55 55 0 0 0 195 33" fill="none" stroke="#a8bbce" stroke-width="1.5"/><text x="30" y="66" style="font-size:11px;fill:#a8bbce">入射X線</text><text x="196" y="12" style="font-size:11px;fill:#a8bbce">散乱X線（検出器へ）</text><text x="222" y="88" style="font-size:11px;fill:#a8bbce">直進方向</text><text x="140" y="95" style="font-size:12px;fill:#eaf6ff">θ</text><text x="200" y="58" style="font-size:12px;fill:#eaf6ff">2θ</text><text x="118" y="112" style="font-size:11px;fill:#a8bbce">結晶の面</text></svg></details>
  <details><summary>ここから、よくあるブラッグの図につながる</summary><svg viewBox="0 0 340 172" role="img" aria-label="ブラッグの図：隣り合う面で散乱した波の道のり差" style="width:100%;max-width:440px;display:block;margin:4px auto"><line x1="55" y1="64" x2="295" y2="64" stroke="#62e6e0" stroke-width="2"/><line x1="55" y1="114" x2="295" y2="114" stroke="#62e6e0" stroke-width="2"/><g fill="#62e6e0"><circle cx="75" cy="64" r="3"/><circle cx="103" cy="64" r="3"/><circle cx="131" cy="64" r="3"/><circle cx="159" cy="64" r="3"/><circle cx="213" cy="64" r="3"/><circle cx="241" cy="64" r="3"/><circle cx="269" cy="64" r="3"/><circle cx="75" cy="114" r="3"/><circle cx="103" cy="114" r="3"/><circle cx="131" cy="114" r="3"/><circle cx="159" cy="114" r="3"/><circle cx="213" cy="114" r="3"/><circle cx="241" cy="114" r="3"/><circle cx="269" cy="114" r="3"/></g><line x1="107" y1="19" x2="185" y2="64" stroke="#ffc66b" stroke-width="2.5"/><line x1="185" y1="64" x2="263" y2="19" stroke="#ffc66b" stroke-width="2.5"/><line x1="85" y1="56" x2="185" y2="114" stroke="#ffc66b" stroke-width="2.5"/><line x1="185" y1="114" x2="267" y2="66" stroke="#ffc66b" stroke-width="2.5"/><line x1="185" y1="64" x2="163" y2="101" stroke="#a8bbce" stroke-width="1.2" stroke-dasharray="3 3"/><line x1="185" y1="64" x2="207" y2="101" stroke="#a8bbce" stroke-width="1.2" stroke-dasharray="3 3"/><line x1="163" y1="101" x2="185" y2="114" stroke="#b5a1ff" stroke-width="4"/><line x1="185" y1="114" x2="207" y2="101" stroke="#b5a1ff" stroke-width="4"/><circle cx="185" cy="64" r="4.5" fill="#ffc66b"/><circle cx="185" cy="114" r="4.5" fill="#ffc66b"/><path d="M 165 64 A 20 20 0 0 1 168 54" fill="none" stroke="#a8bbce" stroke-width="1.5"/><line x1="305" y1="64" x2="305" y2="114" stroke="#a8bbce" stroke-width="1.5"/><text x="152" y="56" style="font-size:12px;fill:#eaf6ff">θ</text><text x="312" y="93" style="font-size:12px;fill:#eaf6ff">d</text><text x="128" y="118" style="font-size:10px;fill:#b5a1ff">d sinθ</text><text x="208" y="118" style="font-size:10px;fill:#b5a1ff">d sinθ</text><text x="60" y="166" style="font-size:11px;fill:#a8bbce">紫の2区間が、下の面の波の「遠回り」</text></svg><ul><li>舞台は、平行な面が間隔 <b>d</b> で積み重なった結晶</li><li>上の面で散乱した波と、1つ下の面で散乱した波を比べる</li><li>下の面の波は、行きと帰りで少し遠回りする（図の紫）。遠回りの合計は <b>2d sinθ</b></li><li>この遠回りが波長 λ の整数倍（nλ）にちょうど等しいとき、山と山が重なって強くなる → <b>2d sinθ = nλ</b>（ブラッグの式）</li><li>角度が少しずれると、何百枚もの面の波が山と谷で混ざって消える。だからピークは特定の角度にだけ立つ</li></ul><p>実験01で「道のり差 ○波長」と見ていたのは、この遠回りのことです。この入口の計算も、鏡のような反射を仮定せず、入射と散乱の両方の道のりから波のずれを出しています。</p></details>
- <div class="nextq"><a href="#q3">次の問い：でも実際はピークいっぱい出るやん、なんで？ →</a></div>
+ <div class="nextq"><a href="#q3">次の問い：なんで複数ピーク出るん？ →</a></div>
 </section>
 <section id="q3" class="qsection" aria-labelledby="q3-title">
- <div class="task"><div><span class="eyebrow">問い 3 / ピークが増える理由は2つ</span><h2 id="q3-title">でも実際はピークいっぱい出るやん、なんで？</h2></div></div>
+ <div class="task"><div><span class="eyebrow">問い 3 / ピークの正体は面の組</span><h2 id="q3-title">なんで複数ピーク出るん？</h2></div></div>
  <div class="workspace">
-  <section class="real"><div class="section-label"><span>面の組を、1つずつ足していく</span><span>間隔の広い順</span></div>
+  <section class="real"><div class="section-label"><span>結晶の中（舞台）</span><span>光った面の組が、ピークを出す</span></div><div class="stage-slot" data-stage-slot="q3"></div><div class="section-label"><span>面の組を、1つずつ足していく</span><span>間隔の広い順</span></div>
    <div class="controls">
     <div class="button-row"><button data-q3-mode="cubic" aria-pressed="true">単純な結晶（a = 4 Å）</button><button data-q3-mode="nacl" aria-pressed="false">塩 NaCl</button></div>
     <div class="button-row"><button id="q3-add" class="primary">面の組を足す</button><button id="q3-remove">1つ戻す</button><button id="q3-all">全部足す</button></div>
-    <div class="button-row"><button id="q3-higher" aria-pressed="false">同じ面の高次を光らせる</button></div>
-    <p class="controls-note">塩みたいに単純な結晶でも、測るとピークは1本じゃない。理由は2つ ― (a) 同じ面の組が、遠回り2波長・3波長でもまたそろう（高次）。(b) 結晶の中には、向きも間隔も違う面の組がたくさんある。足すボタンで (b) を、高次のボタンで (a) を確かめよう。</p>
+    <div class="button-row"><button id="q3-higher" aria-pressed="false">同じ向き・間隔半分の組を光らせる</button></div>
+    <p class="controls-note">塩みたいに単純な結晶でも、測るとピークは1本じゃない。結晶の中には、向きも間隔も違う面の組がたくさんある。足すボタンで組を増やすと、その組のピークがチャートに増えていく。さらに、最初の組と同じ向きで間隔が半分・3分の1の組もあって、それは高い角度にもう何本かピークを出す（金色のボタン）。</p>
     <p class="controls-note">塩 NaCl は2種類の原子からなるため、ピークの高さはこのモデルでは近似。位置と「出る・出ない」の並びが本題。</p>
    </div>
   </section>
@@ -97,20 +97,26 @@
    <p id="q3-count" class="diff-line" aria-live="polite"></p>
   </section>
  </div>
- <div class="answer"><b>答え：</b>ピークが多いのは、面の組が多いから。そして同じ面の組は、高次のそろい方でもう何本か出す。「面の組」という考え方が、ピークの本数と位置をまとめて説明する。</div>
- <div class="nextq"><a href="#origin">次の問い：面の話（マニアックだけど3の理解につながる） →</a></div>
+ <div class="answer"><b>答え：</b>ピークが多いのは、面の組が多いから。向きも間隔も違う組がたくさんあって、それぞれが自分のそろう角度にピークを立てる。同じ向きで間隔が半分の組は、高い角度にもう1本出す。「面の組」という考え方が、ピークの本数と位置をまとめて説明する。</div>
+ <div class="nextq"><a href="#q4">次の問い：なんで高さが違うん？ 消えるやつもあるし →</a></div>
 </section>
-<section id="origin" class="qsection" aria-labelledby="origin-question">
- <div class="task"><div><span class="eyebrow">問い 4 / 面の話</span><h2 id="origin-question">面の話 ― マニアックだけど、問3の答えの正体はこれ</h2></div><button id="origin-reset" class="quiet">条件を戻す</button></div>
- <div class="workspace origin-workspace"><section class="real"><div class="section-label"><span>同じ結晶格子の中</span><span id="origin-structure">単純立方・2 × 2 × 2 単位格子</span></div><svg id="origin-lattice" role="img" aria-label="選んだピークに対応する2枚の平行な面を示す結晶格子の立体図"></svg><p class="origin-hint">色の面が選択中の面。短い太線は、その2枚の間隔 d。番号を変えても、原子は同じ位置にある。</p><label for="orbit">見る向きを回す <input id="orbit" type="range" min="0" max="360" value="32"></label><div id="plane-controls" class="plane-presets" aria-label="面を選ぶ"></div></section>
- <section class="reciprocal"><div class="section-label"><span>同じ結晶から出る全ピーク</span><span>金色 = 選択中</span></div><svg id="origin-plot" role="img" aria-label="クリックしたピークと結晶内の面が対応する回折グラフ"></svg><p class="origin-hint">ピークをクリックして、左の面と見比べよう。下の番号からも選べる。</p><label for="reflection-select">面の番号を選ぶ</label><select id="reflection-select"></select><div id="origin-readout" class="readout" aria-live="polite"></div></section></div>
- <div class="origin-chain" id="origin-chain" aria-live="polite"></div>
- <p id="origin-diff" aria-live="polite"></p>
- <div class="combined-controls"><label for="combined-a">結晶全体の間隔 a <output id="combined-a-value"></output><input id="combined-a" type="range" min="3.2" max="5" step=".01" value="4"></label><p>面を選び直すだけなら結晶は変わらない。このつまみでは、結晶そのものを一様に伸び縮みさせる。</p></div>
- <details id="indices-bonus"><summary>おまけ：(100)・(101)って、どう読む？</summary><div class="indices-layout"><div><svg id="indices-cube" role="img" aria-label="単位格子と、x・y・z軸を切る位置を示す面"></svg><p class="origin-hint">1個の単位格子を拡大。代表の1枚を、同じ番号で表示。</p></div><div><div class="plane-presets" id="indices-presets"></div><p>3つの数字は <b>x・y・z 軸の順番</b>。軸をどこで切るかの「逆数」で表します。0 は、その軸と平行という意味。</p><div id="indices-readout" aria-live="polite"></div><p>まずは <b>1 = 一辺のところで切る、0 = 平行、2 = 一辺の半分で切る</b> と、図を見比べればOK。</p><p class="origin-hint">ここで表示する正の指数では、代表面は hx + ky + lz = 1（座標は単位格子の一辺を1とする）。原点を通る面は平行移動して読みます。</p></div></div><p><a href="https://dictionary.iucr.org/Miller_indices" target="_blank" rel="noreferrer">IUCr / Miller指数</a></p></details>
- <details><summary>並び・結晶子サイズも、一緒に変えてみる</summary><div class="combined-controls"><label for="combined-center">中央の原子の入り具合 <output id="combined-center-value"></output><input id="combined-center" type="range" min="0" max="1" step=".01" value="0"></label><label for="combined-size">結晶子サイズ L <output id="combined-size-value"></output><input id="combined-size" type="range" min="5" max="100" value="60"></label></div><p>消えたピークの位置にも選択目印を残します。左図は局所的な原子配置を拡大したもので、結晶子全体の大きさは表していません。</p></details>
- <div class="powder-note"><h3>これは、いろいろな向きの結晶を含む「粉末」のグラフ。</h3><p>左はその中の結晶を拡大した説明図。測定では、各面で波がそろう向きの結晶からの信号が集まります。向きが違っても面間隔が同じなら、同じ角度に重なります。立方晶の (101) と (110) を選び比べてみよう。</p><p>同じ向きでも2波長、3波長ぶんの道のり差でそろう高次の反射があります。(200) は (100) の2次に対応し、d = a/2 の面で1次の条件として表せます。その面に原子が載らない場合もあります。</p></div>
- <div class="answer"><b>答え：</b>ピーク1本ずつに「作った面の組」がある。だからピークを指せば、結晶の中の面を指せる。面の組につける名前が (100) や (110) ― 名札は、実物を見たあとで初めて意味を持つ。</div>
+<section id="q4" class="qsection" aria-labelledby="q4-title">
+ <div class="task"><div><span class="eyebrow">問い 4 / 強さの正体</span><h2 id="q4-title">なんで高さが違うん？ 消えるやつもあるし</h2></div><button id="q4-reset" class="quiet">最初に戻す</button></div>
+ <div class="workspace">
+  <section class="real"><div class="section-label"><span>結晶の中（舞台）</span><span>中央の原子と、電子の雲</span></div><div class="stage-slot" data-stage-slot="q4"></div>
+   <div class="controls">
+    <label for="q4-center">中央の原子の入り具合 <output id="q4-center-value"></output></label><input id="q4-center" type="range" min="0" max="1" step=".01" value="0"><div class="ends"><span>中央は空</span><span>中央にも原子</span></div>
+    <span style="font-size:14px">原子の電子の多さ</span>
+    <div class="button-row"><button data-q4-atom="0.6" aria-pressed="false">電子が少ない原子</button><button data-q4-atom="1" aria-pressed="true">ふつう</button><button data-q4-atom="1.2" aria-pressed="false">電子が多い原子</button></div>
+    <p class="controls-note">舞台で金色に光るのは、いちばん広い間隔の面の組。中央に原子が入ると、この組のピークがどうなるか、右のチャートで見てみよう。</p>
+   </div>
+  </section>
+  <section class="reciprocal"><div class="section-label"><span>同じ結晶から出る全ピーク</span><span>灰色の目印 = 消えたピーク</span></div><svg id="q4-plot" role="img" aria-label="中央の原子の入り具合と電子の多さで高さが変わり、消えるピークもある回折グラフ"></svg>
+   <p id="q4-read" class="diff-line" aria-live="polite"></p>
+   <p class="controls-note">X線が見るのは、原子核ではなく原子のまわりの電子の雲。電子が多い原子ほど強く散らす（深掘りの「そもそも、X線は原子の何を見ている？」につながる話）。</p>
+  </section>
+ </div>
+ <div class="answer"><b>答え：</b>ピークの高さは、その面の組で波がどれだけ強め合うかで決まる。もとになる1つ1つの散乱の強さは、原子の電子の多さで決まる。そして中央に原子が入ると、面の組によっては波がきれいに打ち消し合って、ピークが消える。位置は動かないのに、消える。</div>
  <div class="nextq"><a href="#q5">次の問い：もう少し複雑ならどうなるん？ →</a></div>
 </section>
 <section id="q5" class="qsection" aria-labelledby="q5-title">
@@ -121,6 +127,7 @@
   <button data-q5="bcc" aria-pressed="false">中央にも原子（体心）</button>
   <button data-q5="bigbcc" aria-pressed="false">大きいセル＋体心</button>
  </div>
+ <div class="stage-panel"><div class="section-label"><span>結晶の中（舞台）</span><span>プリセットで格子の姿が変わる</span></div><div class="stage-slot" data-stage-slot="q5"></div></div>
  <div class="workspace">
   <section class="reciprocal" style="grid-column:1/-1"><div class="section-label"><span>パターンの変化</span><span>灰色の破線 = 基準</span></div><svg id="q5-plot" role="img" aria-label="複雑な結晶プリセットの回折パターンと基準の重ね描き"></svg>
    <p id="q5-read" class="diff-line" aria-live="polite"></p>
@@ -132,7 +139,7 @@
 </section>
 <section id="deepdive" class="deepdive" aria-labelledby="deepdive-title">
  <div class="task"><div><span class="eyebrow">深掘り</span><h2 id="deepdive-title">もっと触る・実務の話</h2></div></div>
- <p class="controls-note">問いの鎖で使った仕組みを、別の角度から触る実験と、実務寄りの解説の置き場。まずは下の実験で「間隔・並び・サイズ」を1つずつ変えてみよう。</p>
+ <p class="controls-note">問いの鎖で使った仕組みを、別の角度から触る実験と、実務寄りの解説の置き場。面の名前の付け方（ミラー指数）は、ここが「勉強を深めるオプション」。まずは下の実験で「間隔・並び・サイズ」を1つずつ変えてみよう。</p>
  <div class="subnav" role="group" aria-label="深掘りの実験を選ぶ">
   <button class="step" data-stage="0" aria-pressed="true"><b>実験 A</b> 間隔 → 角度</button>
   <button class="step" data-stage="1" aria-pressed="false"><b>実験 B</b> 並び → 消える</button>
@@ -145,6 +152,19 @@
 <div class="prediction"><span id="prediction-label">まず予想してみよう</span><div id="choices"></div><p id="feedback" role="status">予想を選んでも、そのままつまみを動かしてもOK。</p></div>
 <div class="bottom"><span id="takeaway">つまみを右へ動かして、最初のピークを追ってみよう。</span><button id="next" class="primary">次は「並び」を変える →</button></div></section>
 <section id="challenge" hidden><span class="eyebrow">最後に、初めての問題</span><h2>測ったピークが全部、少し右へ動いた。<br>結晶の中で何が起きた？</h2><div id="final-choices" class="choices"><button data-answer="0">原子の間隔が狭くなった</button><button data-answer="1">結晶子が小さくなった</button><button data-answer="2">中央に原子が増えた</button></div><p id="final-feedback" role="status">X線の波長は同じ、立方晶の格子が一様に変わったとします。</p><button id="back" class="quiet">実験に戻って確かめる</button></section>
+<section id="origin" class="qsection" aria-labelledby="origin-question">
+ <div class="task"><div><span class="eyebrow">深掘り / 面の話（勉強を深めるオプション）</span><h2 id="origin-question">面の話 ― マニアックだけど、問3の答えの正体はこれ</h2></div><button id="origin-reset" class="quiet">条件を戻す</button></div>
+ <div class="workspace origin-workspace"><section class="real"><div class="section-label"><span>同じ結晶格子の中</span><span id="origin-structure">単純立方・2 × 2 × 2 単位格子</span></div><div class="stage-slot" data-stage-slot="origin"></div><svg id="origin-lattice" role="img" aria-label="選んだピークに対応する2枚の平行な面を示す結晶格子の立体図"></svg><p class="origin-hint">色の面が選択中の面。短い太線は、その2枚の間隔 d。番号を変えても、原子は同じ位置にある。</p><label for="orbit">見る向きを回す <input id="orbit" type="range" min="0" max="360" value="32"></label><div id="plane-controls" class="plane-presets" aria-label="面を選ぶ"></div></section>
+ <section class="reciprocal"><div class="section-label"><span>同じ結晶から出る全ピーク</span><span>金色 = 選択中</span></div><svg id="origin-plot" role="img" aria-label="クリックしたピークと結晶内の面が対応する回折グラフ"></svg><p class="origin-hint">ピークをクリックして、左の面と見比べよう。下の番号からも選べる。</p><label for="reflection-select">面の番号を選ぶ</label><select id="reflection-select"></select><div id="origin-readout" class="readout" aria-live="polite"></div></section></div>
+ <div class="origin-chain" id="origin-chain" aria-live="polite"></div>
+ <p id="origin-diff" aria-live="polite"></p>
+ <div class="combined-controls"><label for="combined-a">結晶全体の間隔 a <output id="combined-a-value"></output><input id="combined-a" type="range" min="3.2" max="5" step=".01" value="4"></label><p>面を選び直すだけなら結晶は変わらない。このつまみでは、結晶そのものを一様に伸び縮みさせる。</p></div>
+ <details id="indices-bonus"><summary>おまけ：(100)・(101)って、どう読む？</summary><div class="indices-layout"><div><svg id="indices-cube" role="img" aria-label="単位格子と、x・y・z軸を切る位置を示す面"></svg><p class="origin-hint">1個の単位格子を拡大。代表の1枚を、同じ番号で表示。</p></div><div><div class="plane-presets" id="indices-presets"></div><p>3つの数字は <b>x・y・z 軸の順番</b>。軸をどこで切るかの「逆数」で表します。0 は、その軸と平行という意味。</p><div id="indices-readout" aria-live="polite"></div><p>まずは <b>1 = 一辺のところで切る、0 = 平行、2 = 一辺の半分で切る</b> と、図を見比べればOK。</p><p class="origin-hint">ここで表示する正の指数では、代表面は hx + ky + lz = 1（座標は単位格子の一辺を1とする）。原点を通る面は平行移動して読みます。</p></div></div><p><a href="https://dictionary.iucr.org/Miller_indices" target="_blank" rel="noreferrer">IUCr / Miller指数</a></p></details>
+ <details><summary>並び・結晶子サイズも、一緒に変えてみる</summary><div class="combined-controls"><label for="combined-center">中央の原子の入り具合 <output id="combined-center-value"></output><input id="combined-center" type="range" min="0" max="1" step=".01" value="0"></label><label for="combined-size">結晶子サイズ L <output id="combined-size-value"></output><input id="combined-size" type="range" min="5" max="100" value="60"></label></div><p>消えたピークの位置にも選択目印を残します。左図は局所的な原子配置を拡大したもので、結晶子全体の大きさは表していません。</p></details>
+ <div class="powder-note"><h3>これは、いろいろな向きの結晶を含む「粉末」のグラフ。</h3><p>左はその中の結晶を拡大した説明図。測定では、各面で波がそろう向きの結晶からの信号が集まります。向きが違っても面間隔が同じなら、同じ角度に重なります。立方晶の (101) と (110) を選び比べてみよう。</p><p>同じ向きでも2波長、3波長ぶんの道のり差でそろう高次の反射があります。(200) は (100) の2次に対応し、d = a/2 の面で1次の条件として表せます。その面に原子が載らない場合もあります。</p></div>
+ <div class="answer"><b>答え：</b>ピーク1本ずつに「作った面の組」がある。だからピークを指せば、結晶の中の面を指せる。面の組につける名前が (100) や (110) ― 名札は、実物を見たあとで初めて意味を持つ。</div>
+ 
+</section>
 <details><summary>そもそも、X線は原子の何を見ている？</summary><p>X線を散らすのは、原子核ではなく、原子のまわりに広がる<b>電子の雲</b>です。核は重すぎて、X線にはほぼ応答しません。だから、電子が多い原子ほど強く散らし、電子が1個しかない水素はほとんど見えません。</p><svg viewBox="0 0 340 96" role="img" aria-label="電子の少ない原子と多い原子の模式図" style="width:100%;max-width:420px;display:block;margin:4px auto"><defs><radialGradient id="ecloud"><stop offset="0%" stop-color="#62e6e0" stop-opacity=".85"/><stop offset="55%" stop-color="#62e6e0" stop-opacity=".28"/><stop offset="100%" stop-color="#62e6e0" stop-opacity="0"/></radialGradient></defs><circle cx="80" cy="40" r="17" fill="url(#ecloud)"/><circle cx="80" cy="40" r="2.6" fill="#eaf6ff"/><circle cx="260" cy="40" r="34" fill="url(#ecloud)"/><circle cx="260" cy="40" r="2.6" fill="#eaf6ff"/><text x="80" y="90" text-anchor="middle" style="font-size:11px;fill:#a8bbce">電子が少ない原子 ＝ 弱く散らす</text><text x="260" y="90" text-anchor="middle" style="font-size:11px;fill:#a8bbce">電子が多い原子 ＝ 強く散らす</text></svg><p>このページで描く原子の丸は、この電子の雲の模式図です。実験03の「中央の原子の入り具合」も、そこにどれだけ電子があるかの話として読めます。</p></details>
 <details><summary>透過法と反射法、2θはどの角？</summary><p>測り方には大きく2つの配置があります。でも <b>2θ の定義はどちらも同じで、入射ビームと回折ビームのなす角度</b>。違うのは、試料と検出器の置き方です。</p><svg viewBox="0 0 340 214" role="img" aria-label="反射法と透過法の配置の模式図" style="width:100%;max-width:440px;display:block;margin:4px auto"><text x="8" y="14" style="font-size:12px;fill:#eaf6ff">反射法（平板試料）</text><line x1="120" y1="70" x2="220" y2="70" stroke="#62e6e0" stroke-width="3"/><line x1="55" y1="25" x2="170" y2="70" stroke="#ffc66b" stroke-width="2.5"/><line x1="170" y1="70" x2="285" y2="25" stroke="#ffc66b" stroke-width="2.5"/><line x1="170" y1="70" x2="227" y2="92" stroke="#ffc66b" stroke-width="1.5" stroke-dasharray="4 4"/><path d="M 212 86 A 45 45 0 0 0 212 54" fill="none" stroke="#a8bbce" stroke-width="1.5"/><text x="55" y="16" text-anchor="middle" style="font-size:11px;fill:#a8bbce">線源</text><text x="285" y="16" text-anchor="middle" style="font-size:11px;fill:#a8bbce">検出器</text><text x="146" y="60" style="font-size:12px;fill:#eaf6ff">θ</text><text x="220" y="74" style="font-size:12px;fill:#eaf6ff">2θ</text><text x="170" y="90" text-anchor="middle" style="font-size:11px;fill:#a8bbce">試料（平板）</text><text x="8" y="122" style="font-size:12px;fill:#eaf6ff">透過法（キャピラリーなど）</text><line x1="20" y1="164" x2="320" y2="164" stroke="#ffc66b" stroke-width="2"/><line x1="150" y1="136" x2="150" y2="192" stroke="#62e6e0" stroke-width="3"/><line x1="150" y1="164" x2="285" y2="126" stroke="#ffc66b" stroke-width="1.8"/><path d="M 220 164 A 70 70 0 0 0 217 145" fill="none" stroke="#a8bbce" stroke-width="1.5"/><ellipse cx="285" cy="164" rx="5" ry="14" fill="none" stroke="#b5a1ff" stroke-width="1.5"/><ellipse cx="285" cy="164" rx="10" ry="26" fill="none" stroke="#b5a1ff" stroke-width="1.5"/><ellipse cx="285" cy="164" rx="16" ry="38" fill="none" stroke="#b5a1ff" stroke-width="1.5"/><text x="34" y="154" style="font-size:11px;fill:#a8bbce">入射X線</text><text x="226" y="150" style="font-size:12px;fill:#eaf6ff">2θ</text><text x="150" y="208" text-anchor="middle" style="font-size:11px;fill:#a8bbce">試料</text><text x="285" y="118" text-anchor="middle" style="font-size:11px;fill:#a8bbce">検出器（リング）</text></svg><p><b>反射法</b>：平板の試料にX線を当て、線源と同じ側で受ける。ピークに寄与するのは、試料の表面と平行な面。線源と検出器は試料を中心に対称に動き、試料が θ 傾くとき検出器は 2θ の位置に来る。平板に載せて手軽に測れるため広く普及し、品質管理の現場でも定番の配置。</p><p><b>透過法</b>：X線に試料を通り抜けさせ、後ろの検出器で受ける。回折したX線は入射ビームを軸とする円錐（コーン）状に広がる。2次元検出器にはリングとして写り、検出器を動かして走査するタイプでは、そのコーンを横切りながら角度ごとの強さを拾っていく。2θ は、直進してきたビームの中心から測った角度。試料がごく少量でも測れ、結晶の向きの偏り（配向）の影響も受けにくい。キャピラリーやウェルプレートで多検体を測る形もあり、研究開発の結晶多形スクリーニングなどでは、こちらが主流の現場も多い。</p></details>
 <details><summary>実務編：ピークの強さが合わない？ — 配向性</summary><p>このページのモデルは、粉末の結晶の向きが<b>バラバラ（ランダム）</b>という前提です。実務では、この前提が崩れることがあります。</p><svg viewBox="0 0 340 96" role="img" aria-label="結晶の向きがバラバラな粉末と、揃ってしまった粉末の模式図" style="width:100%;max-width:440px;display:block;margin:4px auto"><rect x="20" y="16" width="130" height="56" fill="none" stroke="#2c3e52"/><g stroke="#62e6e0" stroke-width="2.5"><line x1="35" y1="30" x2="55" y2="38"/><line x1="62" y1="24" x2="74" y2="41"/><line x1="90" y1="56" x2="108" y2="49"/><line x1="45" y1="60" x2="62" y2="53"/><line x1="115" y1="27" x2="128" y2="43"/><line x1="82" y1="36" x2="98" y2="30"/><line x1="122" y1="58" x2="139" y2="64"/><line x1="30" y1="46" x2="44" y2="37"/></g><rect x="190" y="16" width="130" height="56" fill="none" stroke="#2c3e52"/><g stroke="#ffc66b" stroke-width="2.5"><line x1="205" y1="27" x2="300" y2="27"/><line x1="212" y1="37" x2="308" y2="37"/><line x1="203" y1="47" x2="298" y2="47"/><line x1="210" y1="57" x2="305" y2="57"/><line x1="218" y1="66" x2="295" y2="66"/></g><text x="85" y="90" text-anchor="middle" style="font-size:11px;fill:#a8bbce">向きがバラバラ（教材の前提）</text><text x="255" y="90" text-anchor="middle" style="font-size:11px;fill:#a8bbce">向きが揃った（配向）</text></svg><p>針状や板状の結晶は、平板に載せると寝て向きが揃います（<b>配向</b>）。反射法でピークに寄与するのは試料表面と平行な面だけなので、揃った面のピークだけが異常に強く、ほかが弱くなる。<b>ピークの位置は合っているのに、強さの並びが参照パターンと合わない</b>——実務ではそういう困り方をします。</p><p>対策は、粉砕して結晶の形を崩す、試料を回しながら測る、そしてキャピラリー透過法で測ること。前の「透過法」が配向の影響を受けにくいと言ったのは、このためです。強さの比をそのまま結晶形の判定に使うときは、まず配向を疑うのが実務の勘どころです。</p></details>
@@ -174,6 +194,29 @@
     }
   },{rootMargin:'240px'});
   io.observe(sec);
+})();
+</script>
+<script>
+/* Persistent 3D stage (stage3d.js) for Q1..Q5: loaded lazily when any
+   question section nears the viewport. On failure the 2D toys remain. */
+(function(){
+  var secs=['q1','q2','q3','q4','origin','q5'].map(function(id){return document.getElementById(id);}).filter(Boolean);
+  if(!secs.length||!('IntersectionObserver' in window))return;
+  var done=false;
+  var io=new IntersectionObserver(function(entries){
+    if(done)return;
+    for(var i=0;i<entries.length;i++){
+      if(entries[i].isIntersecting){
+        done=true;io.disconnect();
+        var s=document.createElement('script');
+        s.type='module';s.src='stage3d.js';
+        s.onerror=function(){};
+        document.head.appendChild(s);
+        break;
+      }
+    }
+  },{rootMargin:'300px'});
+  secs.forEach(function(sec){io.observe(sec);});
 })();
 </script>
 </body></html>

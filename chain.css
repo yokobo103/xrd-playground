@@ -25,6 +25,9 @@ nav.chain-toc a span{color:var(--muted);font-size:12px;margin-left:auto;text-ali
 #q0-tonext{display:inline-block;border:1px solid var(--cyan);color:var(--cyan);border-radius:8px;padding:9px 16px;text-decoration:none;font-size:13.5px;background:rgba(6,12,20,.66)}
 #q0-tonext:hover{background:#173a43}
 #q0-fade{position:absolute;inset:0;opacity:0;pointer-events:none;background:radial-gradient(60% 60% at 50% 45%,#fff6e0 0%,#f3e2bb 55%,#d9c491 100%);z-index:2}
+#q0-tube-note{position:absolute;left:10px;bottom:10px;max-width:min(430px,86%);font-size:12.5px;line-height:1.7;color:#eaf6ff;background:rgba(6,12,20,.88);border:1px solid rgba(255,198,107,.45);padding:10px 12px;border-radius:10px;z-index:4}
+#q0-tube-note b{color:var(--gold)}
+#q0-tube-close{margin-left:10px;min-height:32px;padding:4px 10px;font-size:12px}
 #q1-scene{height:300px}#q1-detector{height:196px}#q1-stack{height:190px}
 #q2-planes{height:230px}#q2-plot{height:250px}
 #q3-plot{height:290px}#q5-plot{height:290px}
