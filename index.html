@@ -250,28 +250,44 @@
 })();
 </script>
 <script>
-/* Flow (flow3d.js): the one-stage scroll experience. Loaded lazily when
-   the flow nears the viewport. If the module fails or WebGL is missing,
-   it never activates: #flow stays hidden and the section version below
-   (the verify zone) remains the page — that is the fallback. */
+/* Flow (flow3d.js): the one-stage scroll experience, the page's main
+   act. Loaded IMMEDIATELY on DOMContentLoaded — never via
+   IntersectionObserver: #flow is display:none until the module itself
+   activates it (body.flow-on), so an intersection trigger on #flow can
+   never fire and the flow would deadlock, never appearing at all.
+   Fallback semantics are unchanged: if the module fails to load (CDN /
+   import failure), throws, or WebGL is missing, body.flow-on is never
+   added, #flow stays hidden and the section version below (the verify
+   zone) remains the page. Load failures are detected three ways —
+   the script element's error event, a capturing window error listener
+   (module-graph import failures surface there), and an activation
+   watchdog — and recorded on window.__flowLoadFailed for diagnosis;
+   detection changes nothing visually, the fallback is the default. */
 (function(){
-  var sec=document.getElementById('flow');
-  if(!sec||!('IntersectionObserver' in window))return;
-  var done=false;
-  var io=new IntersectionObserver(function(entries){
-    if(done)return;
-    for(var i=0;i<entries.length;i++){
-      if(entries[i].isIntersecting){
-        done=true;io.disconnect();
-        var s=document.createElement('script');
-        s.type='module';s.src='flow3d.js';
-        s.onerror=function(){};
-        document.head.appendChild(s);
-        break;
-      }
-    }
-  },{rootMargin:'400px'});
-  io.observe(sec);
+  var failed=false;
+  function markFailed(why){
+    if(failed||document.body.classList.contains('flow-on'))return;
+    failed=true;
+    window.__flowLoadFailed=why;
+    if(window.console&&console.warn)console.warn('[flow] not activated: '+why);
+  }
+  window.addEventListener('error',function(e){
+    var t=e&&e.target;
+    if(t&&t.tagName==='SCRIPT'&&/flow3d|three/.test(t.src||''))markFailed('script-error');
+  },true);
+  function load(){
+    var s=document.createElement('script');
+    s.type='module';s.src='flow3d.js';
+    s.onerror=function(){markFailed('module-load-error');};
+    document.head.appendChild(s);
+    var tries=0;
+    var iv=setInterval(function(){
+      if(document.body.classList.contains('flow-on')){clearInterval(iv);return;}
+      if(++tries>=40){clearInterval(iv);markFailed('activation-timeout');}
+    },500);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load);
+  else load();
 })();
 </script>
 </body></html>

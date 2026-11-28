@@ -6,9 +6,11 @@
    captions move — driven by scroll progress through FLOW.state()
    (flowmath.js). There are no choices in here: sample switching and
    parameters live below, in the verify zone (the Q0..Q5 sections).
-   Loaded lazily from index.html. If anything fails (CDN, WebGL), this
-   module never activates: body.flow-on is never added, #flow stays
-   hidden and the section version remains the page (the fallback). */
+   Loaded immediately on DOMContentLoaded from index.html (never via
+   IntersectionObserver: #flow is display:none until activation, so an
+   intersection trigger would deadlock). If anything fails (CDN,
+   WebGL), this module never activates: body.flow-on is never added,
+   #flow stays hidden and the section version remains the page. */
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
