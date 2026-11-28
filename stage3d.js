@@ -181,21 +181,39 @@ function init(renderer) {
     return { ls, corners, centres };
   }
 
-  function waveTube(from, dir, len, mat) {
-    const pts = [];
-    const perp = new THREE.Vector3(-dir.y, dir.x, 0);
-    for (let i = 0; i <= 60; i++) {
-      const t = i / 60, s = Math.sin(t * Math.PI * 2 * 5) * 0.07;
-      pts.push(new THREE.Vector3(
-        from.x + dir.x * len * t + perp.x * s,
-        from.y + dir.y * len * t + perp.y * s,
-        from.z + dir.z * len * t));
+  /* Wavefront comb for Q1: parallel planes sweeping along a direction,
+     spaced by one wavelength (in world units). The wave is a front that
+     meets the whole plane stack at once — never a ray at a single atom. */
+  let q1fx = null;
+  function waveComb(dir, mat, zFrom, zTo, lamW) {
+    const g = new THREE.Group();
+    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
+    g.quaternion.copy(q);
+    for (let z = zFrom; z <= zTo; z += lamW) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 3.2), mat);
+      m.position.z = z;
+      m.userData.ownMat = true;
+      g.add(m);
     }
-    const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 72, 0.02, 6, false);
-    const m = new THREE.Mesh(geo, mat);
-    m.userData.ownMat = true;
-    waveGroup.add(m);
-    return m;
+    waveGroup.add(g);
+    return g;
+  }
+  function updateQ1Fx(t) {
+    if (!q1fx) return;
+    const off = (t * 0.55) % q1fx.lamW;
+    q1fx.inComb.position.copy(q1fx.P).addScaledVector(q1fx.dirIn, off);
+    q1fx.outComb.position.copy(q1fx.P).addScaledVector(q1fx.dirOut, off);
+    /* Every atom's colour follows the total (incident - scattered) phase
+       at its own height: at the aligning angle the layer-to-layer step
+       is exactly 2pi and the whole stack pulses as one; off it, the
+       layers shimmer out of phase and cancel. */
+    const s = Math.sin(q1fx.twoTheta * Math.PI / 360);
+    for (let i = 0; i < q1fx.ys.length; i++) {
+      const phi = -(2 * Math.PI / XRD.wavelength) * 2 * s * (q1fx.ys[i] / q1fx.k) - t * 2.4;
+      const m = 0.35 + 0.85 * (0.5 + 0.5 * Math.cos(phi));
+      atoms.setColorAt(i, tmpColor.copy(COL.atom).multiplyScalar(m));
+    }
+    if (atoms.instanceColor) atoms.instanceColor.needsUpdate = true;
   }
 
   /* ---- per-question states (primed by chain.js / origin.js) ---- */
@@ -220,6 +238,7 @@ function init(renderer) {
   function hklOf(label) { return String(label).split('').map(Number); }
 
   function rebuild() {
+    q1fx = null;
     clearGroup(sheetGroup);
     clearGroup(waveGroup);
     centerMat.opacity = 0;
@@ -234,9 +253,10 @@ function init(renderer) {
       if (span * k > 3.4) k = 3.4 / span;
       const mid = span / 2;
       const list = [];
+      const zRows = s.planes > 16 ? [0] : [-0.62, 0, 0.62];
       offs.forEach(off => {
         const y = (off - mid) * k;
-        for (let ix = -3; ix <= 3; ix++) list.push([ix * 0.62, y, 0, 0.15]);
+        for (let ix = -3; ix <= 3; ix++) for (const zz of zRows) list.push([ix * 0.62, y, zz, 0.15]);
         const geo = new THREE.PlaneGeometry(4.5, 2.3);
         const sh = new THREE.Mesh(geo, MAT.cyan);
         sh.rotation.x = -Math.PI / 2;
@@ -244,19 +264,31 @@ function init(renderer) {
         sheetGroup.add(sh);
       });
       setAtoms(list, atoms);
-      /* wave hint: in from upper-left, out toward the detector angle;
-         the outgoing beam brightens with the stacked intensity. */
+      /* Wavefronts: the incoming front strikes the whole stack at once;
+         each atom re-radiates, and the outgoing front stands up only
+         toward the detector angle where all the scattered waves arrive
+         in phase. Brightness = the same stack intensity the chart uses. */
       const th = s.twoTheta * Math.PI / 360;
       const dirIn = new THREE.Vector3(Math.cos(th), -Math.sin(th), 0);
       const dirOut = new THREE.Vector3(Math.cos(th), Math.sin(th), 0);
       const topY = span * k / 2 + 0.1;
       const P = new THREE.Vector3(0.1, topY, 0);
-      const inMat = new THREE.MeshBasicMaterial({ color: 0xffdf8a, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false });
       let glow = 0;
       if (TOYS) glow = TOYS.stackIntensity(s.twoTheta, offs);
-      const outMat = new THREE.MeshBasicMaterial({ color: 0xbfe6ff, transparent: true, opacity: 0.06 + 0.6 * glow, blending: THREE.AdditiveBlending, depthWrite: false });
-      waveTube(P.clone().addScaledVector(dirIn, -3.4), dirIn, 3.4, inMat);
-      waveTube(P, dirOut, 3.4, outMat);
+      const lamW = XRD.wavelength * k;
+      const inMat = new THREE.MeshBasicMaterial({ color: 0xffdf8a, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+      const outMat = new THREE.MeshBasicMaterial({ color: 0xbfe6ff, transparent: true, opacity: 0.05 + 0.5 * glow, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+      const inComb = waveComb(dirIn, inMat, -3.6, 0, lamW);
+      const outComb = waveComb(dirOut, outMat, 0, 3.6, lamW);
+      inComb.position.copy(P);
+      outComb.position.copy(P);
+      const detMat = new THREE.MeshStandardMaterial({ color: 0x2a3440, emissive: 0xffc66b, emissiveIntensity: 2.2 * glow, metalness: 0.4, roughness: 0.5 });
+      const det = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.85, 0.1), detMat);
+      det.userData.ownMat = true;
+      det.position.copy(P).addScaledVector(dirOut, 4.1);
+      det.lookAt(P);
+      waveGroup.add(det);
+      q1fx = { inComb, outComb, P, dirIn, dirOut, lamW, ys: list.map(p => p[1]), k, twoTheta: s.twoTheta };
     } else {
       /* cubic modes q2/q3/q4/origin/q5 */
       const a = mode === 'q3' ? (s.mode === 'nacl' ? 5.64 : 4) : (s.a != null ? s.a : 4);
@@ -338,8 +370,9 @@ function init(renderer) {
   window.addEventListener('resize', resize);
 
   let rafId = null;
-  function loop() {
+  function loop(ts) {
     rafId = requestAnimationFrame(loop);
+    if (mode === 'q1') updateQ1Fx((ts || 0) * 0.001);
     controls.update();
     renderer.render(scene, camera);
   }

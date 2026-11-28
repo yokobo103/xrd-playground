@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>問いの鎖でたどるXRD｜XRD Playground</title><meta name="description" content="そもそもピークって何なのか、という問いから1つずつ。触れる玩具で答えを確かめながら、粉末XRDの読み方をたどる入門ページ。"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="origin.css"><link rel="stylesheet" href="chain.css"><link rel="stylesheet" href="stage3d.css"><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script><script defer src="physics.js"></script><script defer src="toys.js"></script><script defer src="chain.js"></script><script defer src="app.js"></script><script defer src="origin.js"></script><script defer src="bg.js"></script></head>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>問いの鎖でたどるXRD｜XRD Playground</title><meta name="description" content="そもそもピークって何なのか、という問いから1つずつ。触れる玩具で答えを確かめながら、粉末XRDの読み方をたどる入門ページ。"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="origin.css"><link rel="stylesheet" href="chain.css"><link rel="stylesheet" href="stage3d.css"><link rel="stylesheet" href="flow.css"><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script><script defer src="physics.js"></script><script defer src="toys.js"></script><script defer src="flowmath.js"></script><script defer src="chain.js"></script><script defer src="app.js"></script><script defer src="origin.js"></script><script defer src="bg.js"></script></head>
 <body><main>
 <header><div class="brand">よこぼのAIラボ <span>/ XRD PLAYGROUND</span></div><span class="duration">問いを1つずつ潰していくXRD入門</span></header>
 <div class="intro"><h1>結晶をさわる、<br class="mobile">ピークが変わる。</h1><p>XRDは、X線が強く届く角度を測る方法。<br>「そもそもピークって何なのか」という問いから、1つずつ確かめていこう。</p></div>
 <nav class="chain-toc" aria-label="問いの鎖">
+<a href="#flow" class="toc-flow"><b>流れ</b> まず体感する <span>測る → 潜る → ピークが見える</span></a>
 <a href="#q0"><b>問い 0</b> まず測ってみる <span>装置を動かす → チャートが出る</span></a>
 <a href="#q1"><b>問い 1</b> ピークってそもそもなんなん？ <span>規則性がピークのもと</span></a>
 <a href="#q2"><b>問い 2</b> ある角度って、どう決まってるん？ <span>面同士の距離で決まる</span></a>
@@ -12,6 +13,34 @@
 <a href="#q5"><b>問い 5</b> もう少し複雑ならどうなるん？ <span>増える・消える・指紋</span></a>
 <a href="#deepdive"><b>深掘り</b> もっと触る・実務の話 <span>実験・面の名前・実務の話</span></a>
 </nav>
+<section id="flow" aria-label="流れ：測って、潜って、ピークの正体を見る">
+ <div class="flow-sticky">
+  <div id="flow-stage">
+   <div class="flow-chip">流れ：測る → 潜る → ピークの正体</div>
+   <div id="flow-scale"></div>
+   <div id="flow-hint">スクロールで進む</div>
+   <svg id="flow-chart" viewBox="0 0 440 200" role="img" aria-label="流れに連動して育つ粉末XRDパターン（塩 NaCl）"></svg>
+   <div id="flow-caption" aria-live="polite"></div>
+   <div id="flow-tube-note" hidden><b>X線は、ここで作る</b><br>電子を金属（銅）のターゲットにぶつけると、飛び出した電子の穴へ外側の電子が落ちる時に、決まった波長のX線が出る（特性X線 Cu Kα）。このページの波長 λ = 1.5406 Å は、その値です。<button id="flow-tube-close" type="button">閉じる</button></div>
+   <div id="flow-fade"></div>
+  </div>
+ </div>
+ <div class="flow-beats" aria-hidden="true">
+  <div class="flow-beat"></div>
+  <div class="flow-beat"></div>
+  <div class="flow-beat"></div>
+  <div class="flow-beat"></div>
+  <div class="flow-beat"></div>
+  <div class="flow-beat"></div>
+  <div class="flow-beat"></div>
+ </div>
+ <p class="flow-close">流れはここまで。ピークの正体は、面の積み重なりと「そろう角度」だった。<br>この先は<strong>確かめる</strong>場所：試料や条件を変えて、同じ舞台でもう一度確かめられる。</p>
+</section>
+<div class="verify-head" id="verify">
+ <span class="eyebrow">確かめる</span>
+ <h2>ここからは、自由に触って確かめる</h2>
+ <p class="controls-note">流れの中で見たことを、試料や条件を変えて確かめる場所。選択肢は、ここから先にだけある。</p>
+</div>
 <section id="q0" class="qsection" aria-labelledby="q0-title">
  <div class="task"><div><span class="eyebrow">問い 0 / まず全体像</span><h2 id="q0-title">まず測ってみる</h2></div></div>
  <div class="workspace">
@@ -217,6 +246,31 @@
     }
   },{rootMargin:'300px'});
   secs.forEach(function(sec){io.observe(sec);});
+})();
+</script>
+<script>
+/* Flow (flow3d.js): the one-stage scroll experience. Loaded lazily when
+   the flow nears the viewport. If the module fails or WebGL is missing,
+   it never activates: #flow stays hidden and the section version below
+   (the verify zone) remains the page — that is the fallback. */
+(function(){
+  var sec=document.getElementById('flow');
+  if(!sec||!('IntersectionObserver' in window))return;
+  var done=false;
+  var io=new IntersectionObserver(function(entries){
+    if(done)return;
+    for(var i=0;i<entries.length;i++){
+      if(entries[i].isIntersecting){
+        done=true;io.disconnect();
+        var s=document.createElement('script');
+        s.type='module';s.src='flow3d.js';
+        s.onerror=function(){};
+        document.head.appendChild(s);
+        break;
+      }
+    }
+  },{rootMargin:'400px'});
+  io.observe(sec);
 })();
 </script>
 </body></html>
