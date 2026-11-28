@@ -68,7 +68,7 @@
   svg+='</g>';
   el.innerHTML=svg;
  }
- function q0Render(){ q0Instrument(); q0Plot(); }
+ function q0Render(){ q0Instrument(); q0Plot(); if(window.Q0Three)Q0Three.setScan(q0.scanX); }
  function q0SetSample(key){
   if(q0.phase==='scanning') return;
   q0.sample=key; q0.phase='idle'; q0.scanX=15; q0.trace=null; q0.peaks=q0samples[key].peaks();
@@ -77,20 +77,24 @@
   $('q0-start').textContent='測定スタート';
   $('q0-status').innerHTML='試料を選んで「測定スタート」を押すと、検出器が角度を掃いて、パターンが育っていきます。';
   q0Render();
+  if(window.Q0Three)Q0Three.setSample(key);
  }
  function q0Finish(){
   q0.phase='done'; q0.scanX=90;
   const n=q0.peaks.filter(g=>g.area>1e-6).length;
   const btn=$('q0-start'); btn.disabled=false; btn.textContent='もう一度測る';
   document.querySelectorAll('[data-q0-sample]').forEach(b=>b.disabled=false);
+  if(window.Q0Three)Q0Three.setScanBusy(false);
   $('q0-status').innerHTML=`測り終わった。<strong>${q0samples[q0.sample].label}</strong> のピークは <strong>${n} 本</strong>。この図が、このページでほどいていく題材です。`;
   q0Render();
  }
  function q0Start(){
   if(q0.phase==='scanning') return;
+  if(window.Q0Three&&Q0Three.isDiving()) return;
   q0BuildTrace(); q0.seed+=13; q0.phase='scanning'; q0.scanX=15;
   const btn=$('q0-start'); btn.disabled=true; btn.textContent='測定中…';
   document.querySelectorAll('[data-q0-sample]').forEach(b=>b.disabled=true);
+  if(window.Q0Three)Q0Three.setScanBusy(true);
   if(matchMedia('(prefers-reduced-motion: reduce)').matches){ q0Finish(); return; }
   const t0=performance.now(), DUR=9000;
   (function step(now){

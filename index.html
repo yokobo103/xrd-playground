@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>問いの鎖でたどるXRD｜XRD Playground</title><meta name="description" content="そもそもピークって何なのか、という問いから1つずつ。触れる玩具で答えを確かめながら、粉末XRDの読み方をたどる入門ページ。"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="origin.css"><link rel="stylesheet" href="chain.css"><script defer src="physics.js"></script><script defer src="toys.js"></script><script defer src="chain.js"></script><script defer src="app.js"></script><script defer src="origin.js"></script><script defer src="bg.js"></script></head>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>問いの鎖でたどるXRD｜XRD Playground</title><meta name="description" content="そもそもピークって何なのか、という問いから1つずつ。触れる玩具で答えを確かめながら、粉末XRDの読み方をたどる入門ページ。"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="origin.css"><link rel="stylesheet" href="chain.css"><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script><script defer src="physics.js"></script><script defer src="toys.js"></script><script defer src="chain.js"></script><script defer src="app.js"></script><script defer src="origin.js"></script><script defer src="bg.js"></script></head>
 <body><main>
 <header><div class="brand">よこぼのAIラボ <span>/ XRD PLAYGROUND</span></div><span class="duration">問いを1つずつ潰していくXRD入門</span></header>
 <div class="intro"><h1>結晶をさわる、<br class="mobile">ピークが変わる。</h1><p>XRDは、X線が強く届く角度を測る方法。<br>「そもそもピークって何なのか」という問いから、1つずつ確かめていこう。</p></div>
@@ -15,7 +15,7 @@
 <section id="q0" class="qsection" aria-labelledby="q0-title">
  <div class="task"><div><span class="eyebrow">問い 0 / まず全体像</span><h2 id="q0-title">まず測ってみる</h2></div></div>
  <div class="workspace">
-  <section class="real"><div class="section-label"><span>装置の模式図（透過法・検出器が動くタイプ）</span><span>検出器の動きは右のグラフと連動</span></div><svg id="q0-instrument" role="img" aria-label="透過法のX線回折装置の模式図。試料を通り抜けたX線を、弧の上を動く検出器が角度ごとに受ける"></svg>
+  <section class="real"><div class="section-label"><span id="q0-inst-label">装置の模式図（透過法・検出器が動くタイプ）</span><span id="q0-inst-sub">検出器の動きは右のグラフと連動</span></div><div id="q0-3d" hidden><div id="q0-stage"><div class="q0-chip">反射法 ・ θ-θゴニオメーター（アーム連動・模式）</div><div class="q0-hint">ドラッグで回転 ／ ピンチ・ホイールで拡大</div><div id="q0-scale"></div><div id="q0-land"><p id="q0-caption">ここが問い1の世界。面の積み重なりで、波がそろう</p><a id="q0-tonext" href="#q1">問い1へ進む →</a></div><div id="q0-fade"></div></div><div class="button-row"><button id="q0-dive">試料の中をのぞく</button><button id="q0-back" style="display:none">装置に戻る</button></div></div><svg id="q0-instrument" role="img" aria-label="透過法のX線回折装置の模式図。試料を通り抜けたX線を、弧の上を動く検出器が角度ごとに受ける"></svg>
    <div class="controls">
     <span style="font-size:14px">試料を選ぶ</span>
     <div class="button-row"><button data-q0-sample="salt" aria-pressed="true">塩（NaCl）</button><button data-q0-sample="metal" aria-pressed="false">金属（体心の並び）</button><button data-q0-sample="big" aria-pressed="false">大きな結晶（大きいセル）</button></div>
@@ -152,4 +152,28 @@
 <details><summary>モデルの範囲・式・出典</summary><div class="notes"><p>同じ種類の原子からなる理想的な立方晶の粉末を想定。格子定数 a は単位格子の一辺、結晶子サイズ L は規則正しい並びが続く長さです。粒子全体の大きさとは限りません。図の原子数は模式的です。</p><p>ピーク位置：d = a / √(h²+k²+l²)、2d sin θ = λ。波長 λ = 1.5406 Å 固定。グラフは 2θ（入射方向と散乱方向のなす角）。面の番号 (hkl) は原子面の向きを区別する名前です。</p><p>強度：F = 1 + t exp[πi(h+k+l)]、面積 ∝ 多重度 × |F|²/(1+t)²。t = 0 は角だけ、t = 1 は同じ原子が体心にもある格子。中間値は体心位置の平均占有率で、散漫散乱は省略。比較のため総散乱能で規格化し、原子散乱因子の角度依存・Lorentz偏光因子・吸収・熱振動は省略しています。実物の強度比を再現する解析ツールではありません。</p><p>幅：Scherrer式 β = 0.9λ/(L cos θ) を用い、装置幅 0.12° と二乗和で合成。β は 2θ の半値幅。線形は面積一定のGaussian近似。サイズ以外のひずみ・欠陥も実測ピークを広げます。下段の波は仕組みを伝える模式図で、時間変化する測定信号ではありません。</p><p>実験1の波の一致度は、(100)方向の8枚の面に対する波の和から計算。実験3は8枚と24枚の面を比較する説明図で、上のnm値の直接描画ではありません。</p><p>出典：<a href="https://dictionary.iucr.org/Bragg%27s_law" target="_blank" rel="noreferrer">IUCr / Braggの法則</a> · <a href="https://www.iucr.org/what-we-do/education/pamphlets/introduction-calculation-of-structure-factors" target="_blank" rel="noreferrer">IUCr / 構造因子入門</a> · <a href="https://journals.iucr.org/j/issues/2024/05/00/oc5037/" target="_blank" rel="noreferrer">IUCr / 結晶子サイズとピーク幅</a></p></div></details>
 </section>
 <footer>教育用PoC / 理想結晶のシミュレーション <span>結晶を見る。波を重ねる。ピークを読む。</span></footer>
-</main></body></html>
+</main>
+<script>
+/* Q0 3D (q0three.js) is loaded lazily, only when Q0 approaches the viewport.
+   If the load fails (CDN / WebGL), the 2D Q0 stays as the fallback. */
+(function(){
+  var sec=document.getElementById('q0');
+  if(!sec||!('IntersectionObserver' in window))return;
+  var done=false;
+  var io=new IntersectionObserver(function(entries){
+    if(done)return;
+    for(var i=0;i<entries.length;i++){
+      if(entries[i].isIntersecting){
+        done=true;io.disconnect();
+        var s=document.createElement('script');
+        s.type='module';s.src='q0three.js';
+        s.onerror=function(){};
+        document.head.appendChild(s);
+        break;
+      }
+    }
+  },{rootMargin:'240px'});
+  io.observe(sec);
+})();
+</script>
+</body></html>
